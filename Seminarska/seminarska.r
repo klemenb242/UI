@@ -207,6 +207,8 @@ brierScore <- function(observedMatrix, predictedMatrix)
 {
 	sum((observedMatrix - predictedMatrix) ^ 2) / nrow(predictedMatrix)
 }
+library(nnet)
+obsMat <- class.ind(test$isHomeWinner)
 
 
 # # DECISION TREE
@@ -234,14 +236,26 @@ brierScore <- function(observedMatrix, predictedMatrix)
 
 # NAIVNI BAYESOV KLASIFIKATOR
 
-library(e1071)
+# library(e1071)
 
-nb <- naiveBayes(isHomeWinner ~ ., data = train)
-predicted <- predict(nb, test, type="class")
+# nb <- naiveBayes(isHomeWinner ~ ., data = train)
+# predicted <- predict(nb, test, type="class")
+
+# CAnb <- CA(observed, predicted);
+
+# predMat <- predict(nb, test, type = "raw")
+# brierScore(obsMat, predMat)
+
+
+# RANDOM FOREST
+
+library(randomForest)
+rf <- randomForest(position ~ ., data = train)
+predicted <- predict(rf, test, type="class")
 CA(observed, predicted)
 
-predMat <- predict(nb, test, type = "raw")
-brierScore(obsMat, predMat)
+predMat <- predict(rf, test, type = "prob")
+brier.score(obsMat, predMat)
 
 
 
