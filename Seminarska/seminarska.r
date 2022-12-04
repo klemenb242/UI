@@ -249,13 +249,13 @@ obsMat <- class.ind(test$isHomeWinner)
 
 # RANDOM FOREST
 
-library(randomForest)
-rf <- randomForest(position ~ ., data = train)
-predicted <- predict(rf, test, type="class")
-CA(observed, predicted)
+# library(randomForest)
+# rf <- randomForest(position ~ ., data = train)
+# predicted <- predict(rf, test, type="class")
+# CA(observed, predicted)
 
-predMat <- predict(rf, test, type = "prob")
-brier.score(obsMat, predMat)
+# predMat <- predict(rf, test, type = "prob")
+# brier.score(obsMat, predMat)
 
 
 
