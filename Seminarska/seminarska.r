@@ -25,6 +25,11 @@ Precision <- function(obs, pred, pos.class)
     return(TP / (TP + FP))
 }
 
+CA <- function(observed, predicted)
+{
+	mean(observed == predicted)
+}
+
 Split70to30 <- function(data)
 {
     train <- data[1:round(0.7*nrow(data)),]
@@ -192,9 +197,10 @@ print(nrow(structuredData))
 # </DEBUG>
 
 structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
-# GainRatio omili precenjevanje vecvrednostih attributov
-informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "InfGain"), decreasing = TRUE)
-# na podlagi analize atributov sva odstranila PTSEx, TO, DayOff, 
+
+# # GainRatio omili precenjevanje vecvrednostih attributov
+# informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "InfGain"), decreasing = TRUE)
+# # na podlagi analize atributov sva odstranila PTSEx, DayOff
 
 splitData = Split70to30(structuredData);
 train <- splitData[[1]];
@@ -204,15 +210,24 @@ test <- splitData[[2]];
 # DECISION TREE
 library(rpart)
 library(rpart.plot)
-print("dt")
-dt <- rpart(isHomeWinner ~ ., data = train, method = "class")
+dt <- rpart(isHomeWinner ~ ., data=train, cp=0)
 rpart.plot(dt)
 
-observed <- test$isHomeWinner
+# rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
+printcp(dt)
+tab <- printcp(dt)
+
+# izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
+row <- which.min(tab[,"xerror"])
+th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
+th
+
+# porezemo drevo z izbrano nastavitvijo
+dt <- prune(dt, cp=th)
+rpart.plot(dt)
+
 predicted <- predict(dt, test, type="class")
-print("predicted")
-q <- observed == predicted
-sum(q)/length(q)
+CA(observed, predicted)
 
 
 
