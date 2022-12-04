@@ -120,39 +120,38 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
 # slice md to only 300 games
 #  md <- md[1:300,];
 
-# structuredData <- data.frame();
-# for (i in 1:nrow(md)) {
-#     game <- md[i,];
-#     homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
-#     homeTeamGames <- md[homeTeamGamesSelection,];
-#     if (nrow(homeTeamGames) == 0) {
-#         next;
-#     }
-#     structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
-#     # dodan nov atribut zxwwa ratio vseh preteklih zmag
-#     structuredHomeTeamData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
+structuredData <- data.frame();
+for (i in 1:nrow(md)) {
+    game <- md[i,];
+    homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
+    homeTeamGames <- md[homeTeamGamesSelection,];
+    if (nrow(homeTeamGames) == 0) {
+        next;
+    }
+    structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
+    # dodan nov atribut zxwwa ratio vseh preteklih zmag
+    structuredHomeTeamData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
 
-#     awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
-#     awayTeamGames <- md[awayTeamGamesSelection,];
-#     if (nrow(awayTeamGames) == 0) {
-#         next;
-#     }
-#     structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
-#     structuredAwayTeamData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
+    awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
+    awayTeamGames <- md[awayTeamGamesSelection,];
+    if (nrow(awayTeamGames) == 0) {
+        next;
+    }
+    structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
+    structuredAwayTeamData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
     
-#     # zdruzeno v vrstico
-#     structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
+    # zdruzeno v vrstico
+    structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
 
-#     structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
-#     structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
+    structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
+    structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
 
-#     structuredData <- rbind(structuredData, structuredGameData);
-# }
+    structuredData <- rbind(structuredData, structuredGameData);
+}
 
 
 
 # <DEBUG>
-structuredData <- read.csv("myfile.csv");
 print(nrow(structuredData));
 
 
@@ -160,8 +159,7 @@ print(nrow(structuredData));
 
 structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
 
-# # GainRatio omili precenjevanje vecvrednostih attributov
-# informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "InfGain"), decreasing = TRUE)
+# informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "GainRatio"), decreasing = TRUE)
 # # na podlagi analize atributov sva odstranila PTSEx, DayOff, TO in PF
 
 splitData = Split70to30(structuredData);
@@ -203,6 +201,7 @@ brierScore <- function(observedMatrix, predictedMatrix)
 }
 library(nnet)
 obsMat <- class.ind(test$isHomeWinner)
+observed <- test$isHomeWinner;
 
 
 # DECISION TREE
