@@ -1,4 +1,4 @@
-install.packages("e1071")
+
 
 library(CORElearn)
 
@@ -77,16 +77,9 @@ structureTeamData <- function(games, position)
 {
     teamStatistics <- list();    
     teamStatistics[[attr(position, "PTS")]] <- mean(games[[attr(position, "PTS")]]);
-    teamStatistics[[attr(position, "AST")]] <- mean(games[[attr(position, "AST")]]);
-    teamStatistics[[attr(position, "STL")]] <- mean(games[[attr(position, "STL")]]);
-    teamStatistics[[attr(position, "BLK")]] <- mean(games[[attr(position, "BLK")]]);
 
     teamStatistics[[attr(position, "ORBR")]] <- mean(games[[attr(position, "ORB")]] / games[[attr(position, "TRB")]]);
     teamStatistics[[attr(position, "DRBR")]] <- mean(games[[attr(position, "DRB")]] / games[[attr(position, "TRB")]]);
-    teamStatistics[[attr(position, "PTS1")]] <- mean(games[[attr(position, "PTS1")]]);
-    teamStatistics[[attr(position, "PTS2")]] <- mean(games[[attr(position, "PTS2")]]);
-    teamStatistics[[attr(position, "PTS3")]] <- mean(games[[attr(position, "PTS3")]]);
-    teamStatistics[[attr(position, "PTS4")]] <- mean(games[[attr(position, "PTS4")]]);
     
     # percetanges
     teamStatistics[[attr(position, "FGR")]] <- mean(games[[attr(position,"FGM")]] / games[[attr(position, "FGA")]]);
@@ -160,7 +153,8 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
 
 # <DEBUG>
 structuredData <- read.csv("myfile.csv");
-print(nrow(structuredData))
+print(nrow(structuredData));
+
 
 # </DEBUG>
 
@@ -211,54 +205,68 @@ library(nnet)
 obsMat <- class.ind(test$isHomeWinner)
 
 
-# # DECISION TREE
-# library(rpart)
-# library(rpart.plot)
-# dt <- rpart(isHomeWinner ~ ., data=train, cp=0)
-# rpart.plot(dt)
+# DECISION TREE
+library(rpart)
+library(rpart.plot)
+dt <- rpart(isHomeWinner ~ ., data=train, cp=0)
+rpart.plot(dt)
 
-# # rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
-# printcp(dt)
-# tab <- printcp(dt)
+# rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
+printcp(dt)
+tab <- printcp(dt)
 
-# # izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
-# row <- which.min(tab[,"xerror"])
-# th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
-# th
+# izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
+row <- which.min(tab[,"xerror"])
+th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
+th
 
-# # porezemo drevo z izbrano nastavitvijo
-# dt <- prune(dt, cp=th)
-# rpart.plot(dt)
+# porezemo drevo z izbrano nastavitvijo
+dt <- prune(dt, cp=th)
+rpart.plot(dt)
 
-# predicted <- predict(dt, test, type="class")
-# CA(observed, predicted)
-
-
-# NAIVNI BAYESOV KLASIFIKATOR
-
-# library(e1071)
-
-# nb <- naiveBayes(isHomeWinner ~ ., data = train)
-# predicted <- predict(nb, test, type="class")
-
-# CAnb <- CA(observed, predicted);
-
-# predMat <- predict(nb, test, type = "raw")
-# brierScore(obsMat, predMat)
+predicted <- predict(dt, test, type="class")
+CA(observed, predicted)
+Sensitivity(observed, predicted, "TRUE")
 
 
-# RANDOM FOREST
+# # NAIVNI BAYESOV KLASIFIKATOR
 
-# library(randomForest)
-# rf <- randomForest(position ~ ., data = train)
-# predicted <- predict(rf, test, type="class")
-# CA(observed, predicted)
+# # library(e1071)
 
-# predMat <- predict(rf, test, type = "prob")
-# brier.score(obsMat, predMat)
+# # nb <- naiveBayes(isHomeWinner ~ ., data = train)
+# # predicted <- predict(nb, test, type="class")
+
+# # CAnb <- CA(observed, predicted);
+
+# # predMat <- predict(nb, test, type = "raw")
+# # brierScore(obsMat, predMat)
 
 
-# REGRESIJA
+# # RANDOM FOREST
+
+# # library(randomForest)
+# # rf <- randomForest(position ~ ., data = train)
+# # predicted <- predict(rf, test, type="class")
+# # CA(observed, predicted)
+
+# # predMat <- predict(rf, test, type = "prob")
+# # brier.score(obsMat, predMat)
+
+
+# # REGRESIJA
+
+# # Mere za ocenjevanje ucenja v regresiji
+# # srednja absolutna napaka
+# mae <- function(obs, pred)
+# {
+# 	mean(abs(obs - pred))
+# }
+
+# # srednja kvadratna napaka
+# mse <- function(obs, pred)
+# {
+# 	mean((obs - pred)^2)
+# }
 
 
 
