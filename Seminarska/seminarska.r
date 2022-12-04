@@ -1,35 +1,8 @@
-
+install.packages("e1071")
 
 library(CORElearn)
 
 # HELPERS
-# odstotek pravilno klasificiranih pozitivnih primerov
-Sensitivity <- function(obs, pred, pos.class)
-{
-    TP <- sum(obs == pos.class & pred == pos.class)
-    FN <- sum(obs == pos.class & pred != pos.class)
-    return(TP / (TP + FN))
-}
-# odstotek pravilno klasificiranih negativnih primerov
-Specificity <- function(obs, pred, pos.class)
-{
-    TN <- sum(obs != pos.class & pred != pos.class)
-    FP <- sum(obs != pos.class & pred == pos.class)
-    return(TN / (TN + FP))
-}
-# odstotek pravilno klasificiranih primerov, ki so bili klasificirani kot pozitivni
-Precision <- function(obs, pred, pos.class)
-{
-    TP <- sum(obs == pos.class & pred == pos.class)
-    FP <- sum(obs != pos.class & pred == pos.class)
-    return(TP / (TP + FP))
-}
-
-CA <- function(observed, predicted)
-{
-	mean(observed == predicted)
-}
-
 Split70to30 <- function(data)
 {
     train <- data[1:round(0.7*nrow(data)),]
@@ -105,14 +78,11 @@ structureTeamData <- function(games, position)
     teamStatistics <- list();    
     teamStatistics[[attr(position, "PTS")]] <- mean(games[[attr(position, "PTS")]]);
     teamStatistics[[attr(position, "AST")]] <- mean(games[[attr(position, "AST")]]);
-    teamStatistics[[attr(position, "TO")]] <- mean(games[[attr(position, "TO")]]);
     teamStatistics[[attr(position, "STL")]] <- mean(games[[attr(position, "STL")]]);
     teamStatistics[[attr(position, "BLK")]] <- mean(games[[attr(position, "BLK")]]);
-    teamStatistics[[attr(position, "PF")]] <- mean(games[[attr(position, "PF")]]);
 
-    teamStatistics[[attr(position, "ORB")]] <- mean(games[[attr(position, "ORB")]]);
-    teamStatistics[[attr(position, "DRB")]] <- mean(games[[attr(position, "DRB")]]);
-    teamStatistics[[attr(position, "TRB")]] <- mean(games[[attr(position, "TRB")]]);
+    teamStatistics[[attr(position, "ORBR")]] <- mean(games[[attr(position, "ORB")]] / games[[attr(position, "TRB")]]);
+    teamStatistics[[attr(position, "DRBR")]] <- mean(games[[attr(position, "DRB")]] / games[[attr(position, "TRB")]]);
     teamStatistics[[attr(position, "PTS1")]] <- mean(games[[attr(position, "PTS1")]]);
     teamStatistics[[attr(position, "PTS2")]] <- mean(games[[attr(position, "PTS2")]]);
     teamStatistics[[attr(position, "PTS3")]] <- mean(games[[attr(position, "PTS3")]]);
@@ -157,7 +127,6 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
 # slice md to only 300 games
 #  md <- md[1:300,];
 
-# strukturiraj podatke za ucenje
 # structuredData <- data.frame();
 # for (i in 1:nrow(md)) {
 #     game <- md[i,];
@@ -190,7 +159,6 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
 
 
 # <DEBUG>
-
 structuredData <- read.csv("myfile.csv");
 print(nrow(structuredData))
 
@@ -200,34 +168,80 @@ structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
 
 # # GainRatio omili precenjevanje vecvrednostih attributov
 # informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "InfGain"), decreasing = TRUE)
-# # na podlagi analize atributov sva odstranila PTSEx, DayOff
+# # na podlagi analize atributov sva odstranila PTSEx, DayOff, TO in PF
 
 splitData = Split70to30(structuredData);
 train <- splitData[[1]];
 test <- splitData[[2]];
 
 
-# DECISION TREE
-library(rpart)
-library(rpart.plot)
-dt <- rpart(isHomeWinner ~ ., data=train, cp=0)
-rpart.plot(dt)
+# EVALUATION HELPERS
+# odstotek pravilno klasificiranih pozitivnih primerov
+Sensitivity <- function(obs, pred, pos.class)
+{
+    TP <- sum(obs == pos.class & pred == pos.class)
+    FN <- sum(obs == pos.class & pred != pos.class)
+    return(TP / (TP + FN))
+}
+# odstotek pravilno klasificiranih negativnih primerov
+Specificity <- function(obs, pred, pos.class)
+{
+    TN <- sum(obs != pos.class & pred != pos.class)
+    FP <- sum(obs != pos.class & pred == pos.class)
+    return(TN / (TN + FP))
+}
+# odstotek pravilno klasificiranih primerov, ki so bili klasificirani kot pozitivni
+Precision <- function(obs, pred, pos.class)
+{
+    TP <- sum(obs == pos.class & pred == pos.class)
+    FP <- sum(obs != pos.class & pred == pos.class)
+    return(TP / (TP + FP))
+}
 
-# rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
-printcp(dt)
-tab <- printcp(dt)
+CA <- function(observed, predicted)
+{
+	mean(observed == predicted)
+}
 
-# izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
-row <- which.min(tab[,"xerror"])
-th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
-th
+brierScore <- function(observedMatrix, predictedMatrix)
+{
+	sum((observedMatrix - predictedMatrix) ^ 2) / nrow(predictedMatrix)
+}
 
-# porezemo drevo z izbrano nastavitvijo
-dt <- prune(dt, cp=th)
-rpart.plot(dt)
 
-predicted <- predict(dt, test, type="class")
+# # DECISION TREE
+# library(rpart)
+# library(rpart.plot)
+# dt <- rpart(isHomeWinner ~ ., data=train, cp=0)
+# rpart.plot(dt)
+
+# # rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
+# printcp(dt)
+# tab <- printcp(dt)
+
+# # izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
+# row <- which.min(tab[,"xerror"])
+# th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
+# th
+
+# # porezemo drevo z izbrano nastavitvijo
+# dt <- prune(dt, cp=th)
+# rpart.plot(dt)
+
+# predicted <- predict(dt, test, type="class")
+# CA(observed, predicted)
+
+
+# NAIVNI BAYESOV KLASIFIKATOR
+
+library(e1071)
+
+nb <- naiveBayes(isHomeWinner ~ ., data = train)
+predicted <- predict(nb, test, type="class")
 CA(observed, predicted)
+
+predMat <- predict(nb, test, type = "raw")
+brierScore(obsMat, predMat)
 
 
 
