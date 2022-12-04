@@ -100,7 +100,7 @@ pastWinLoseRatio <- function (teamAbbr, beforeDate, data) {
     return ((homeWinsRatio + awayWinsRatio) / 2);
 }
 
-# vrne pozitiven rezultat ce je ekipa1 overal boljsa, negativen ce je ekipa2 overal boljsa
+# vrne pozitiven rezultat ce ima ekipa1 overal vec tock , negativen pa ce jih ima ekipa2 vec
 pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
     homeGamesSelection <- md$homeAbbr == team1 & md$awayAbbr == team2 & md$gmDate < beforeDate;
     homeGames <- md[homeGamesSelection,];
@@ -109,58 +109,53 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
     awayGames <- md[awayGamesSelection,];
     awayGamesScoreDifference <- sum(awayGames$awayPTS - awayGames$homePTS);
     totalSum = homeGamesScoreDifference + awayGamesScoreDifference;
-    if (is.null(totalSum)) {
+    if (is.null(totalSum) || is.na(totalSum)) {
         return(0);
     }
     return (totalSum);
 }
 
 
+# structuredData <- data.frame();
+# for (i in 1:nrow(md)) {
+#     game <- md[i,];
+#     homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
+#     homeTeamGames <- md[homeTeamGamesSelection,];
+#     if (nrow(homeTeamGames) == 0) {
+#         next;
+#     }
+#     structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
 
-# slice md to only 300 games
-#  md <- md[1:300,];
-
-structuredData <- data.frame();
-for (i in 1:nrow(md)) {
-    game <- md[i,];
-    homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
-    homeTeamGames <- md[homeTeamGamesSelection,];
-    if (nrow(homeTeamGames) == 0) {
-        next;
-    }
-    structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
-    # dodan nov atribut zxwwa ratio vseh preteklih zmag
-    structuredHomeTeamData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
-
-    awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
-    awayTeamGames <- md[awayTeamGamesSelection,];
-    if (nrow(awayTeamGames) == 0) {
-        next;
-    }
-    structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
-    structuredAwayTeamData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
+#     awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
+#     awayTeamGames <- md[awayTeamGamesSelection,];
+#     if (nrow(awayTeamGames) == 0) {
+#         next;
+#     }
+#     structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
     
-    # zdruzeno v vrstico
-    structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
+#     # zdruzeno v vrstico
+#     structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
 
-    structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
-    structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
+#     # dodamo nove atribute
+#     structuredGameData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
+#     structuredGameData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
+#     structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
+#     structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
+#     structuredGameData$scoreDifference <- game$homePTS - game$awayPTS;
 
-    structuredData <- rbind(structuredData, structuredGameData);
-}
+#     structuredData <- rbind(structuredData, structuredGameData);
+# }
 
 
 
 # <DEBUG>
-print(nrow(structuredData));
-
-
+structuredData <- read.csv("my_file.csv");
+print(colnames(structuredData));
 # </DEBUG>
 
 structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
 
-# informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "GainRatio"), decreasing = TRUE)
-# # na podlagi analize atributov sva odstranila PTSEx, DayOff, TO in PF
+# KLASIFIKACIJA
 
 splitData = Split70to30(structuredData);
 train <- splitData[[1]];
@@ -205,67 +200,139 @@ observed <- test$isHomeWinner;
 
 
 # DECISION TREE
-library(rpart)
-library(rpart.plot)
-dt <- rpart(isHomeWinner ~ ., data=train, cp=0)
-rpart.plot(dt)
+# library(rpart)
+# library(rpart.plot)
+# dt <- rpart(isHomeWinner ~ . - scoreDifference, data=train, cp=0)
+# rpart.plot(dt)
 
-# rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
-printcp(dt)
-tab <- printcp(dt)
+# # rpart med gradnjo drevesa interno ocenjuje njegovo kvaliteto 
+# printcp(dt)
+# tab <- printcp(dt)
 
-# izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
-row <- which.min(tab[,"xerror"])
-th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
-th
+# # izberemo vrednost parametra cp, ki ustreza minimalni napaki internega presnega preverjanja
+# row <- which.min(tab[,"xerror"])
+# th <- mean(c(tab[row, "CP"], tab[row-1, "CP"]))
+# th
 
-# porezemo drevo z izbrano nastavitvijo
-dt <- prune(dt, cp=th)
-rpart.plot(dt)
+# # porezemo drevo z izbrano nastavitvijo
+# dt <- prune(dt, cp=th)
+# rpart.plot(dt)
 
-predicted <- predict(dt, test, type="class")
-CA(observed, predicted)
-Sensitivity(observed, predicted, "TRUE")
+# predicted <- predict(dt, test, type="class")
+# CA(observed, predicted)
+# Sensitivity(observed, predicted, "TRUE")
+# Specificity(observed, predicted, "TRUE")
+# Precision(observed, predicted, "TRUE")
+# predMat <- predict(dt, test, type = "prob")
+# brierScore(obsMat, predMat)
 
 
-# # NAIVNI BAYESOV KLASIFIKATOR
+# NAIVNI BAYESOV KLASIFIKATOR
 
-# # library(e1071)
+# library(e1071)
 
-# # nb <- naiveBayes(isHomeWinner ~ ., data = train)
-# # predicted <- predict(nb, test, type="class")
+# nb <- naiveBayes(isHomeWinner ~ . - scoreDifference, data = train)
+# predicted <- predict(nb, test, type="class")
 
-# # CAnb <- CA(observed, predicted);
 
-# # predMat <- predict(nb, test, type = "raw")
-# # brierScore(obsMat, predMat)
+# CA(observed, predicted)
+# Sensitivity(observed, predicted, "TRUE")
+# Specificity(observed, predicted, "TRUE")
+# Precision(observed, predicted, "TRUE")
+# predMat <- predict(nb, test, type = "prob")
+# brierScore(obsMat, predMat)
 
 
 # # RANDOM FOREST
 
-# # library(randomForest)
-# # rf <- randomForest(position ~ ., data = train)
-# # predicted <- predict(rf, test, type="class")
-# # CA(observed, predicted)
+# library(randomForest)
+# rf <- randomForest(isHomeWinner ~ . - scoreDifference, data = train)
+# predicted <- predict(rf, test, type="class")
+# CA(observed, predicted)
 
-# # predMat <- predict(rf, test, type = "prob")
-# # brier.score(obsMat, predMat)
+# predMat <- predict(rf, test, type = "prob")
+# brier.score(obsMat, predMat)
+# CA(observed, predicted)
+# Sensitivity(observed, predicted, "TRUE")
+# Specificity(observed, predicted, "TRUE")
+# Precision(observed, predicted, "TRUE")
+# predMat <- predict(rf, test, type = "prob")
+# brierScore(obsMat, predMat)
 
 
 # # REGRESIJA
 
-# # Mere za ocenjevanje ucenja v regresiji
-# # srednja absolutna napaka
-# mae <- function(obs, pred)
-# {
-# 	mean(abs(obs - pred))
-# }
+# mere ocenjevanja
+# srednja absolutna napaka
+mae <- function(obs, pred)
+{
+    obs <- as.numeric(obs);
+    pred <- as.numeric(pred);
+	mean(abs(obs - pred))
+}
 
-# # srednja kvadratna napaka
-# mse <- function(obs, pred)
-# {
-# 	mean((obs - pred)^2)
-# }
+# srednja kvadratna napaka
+mse <- function(obs, pred)
+{
+    obs <- as.numeric(obs);
+    pred <- as.numeric(pred);
+	mean((obs - pred)^2)
+}
+# relativna srednja absolutna napaka
+rmae <- function(obs, pred, mean.val) 
+{  
+    obs <- as.numeric(obs);
+    pred <- as.numeric(pred);
+	sum(abs(obs - pred)) / sum(abs(obs - mean.val))
+}
+
+# relativna srednja kvadratna napaka
+rmse <- function(obs, pred, mean.val) 
+{
+    obs <- as.numeric(obs);
+    pred <- as.numeric(pred);
+	sum((obs - pred)^2)/sum((obs - mean.val)^2)
+}
+
+
+splitData = Split70to30(structuredData);
+train <- splitData[[1]];
+test <- splitData[[2]];
+
+
+#
+# Trivialni model
+#
+# meanVal <- mean(train$scoreDifference);
+# meanVal
+
+# predTrivial <- rep(meanVal, nrow(test))
+# mae(observed, predTrivial)
+# mse(observed, predTrivial)
+
+
+# Precno preverjanje
+predicted <- vector()
+
+for (i in 1:nrow(structuredData))
+{	
+	# print(paste("Izlocen primer na indeksu", i))
+	# flush.console()
+
+	model <- lm(scoreDifference ~ . - isHomeWinner, structuredData[-i,])
+	predicted[i] <- predict(model, structuredData[i,])
+}
+
+plot(train$scoreDifference)
+points(predicted, col="red")
+
+mae(structuredData$scoreDifference, predicted)
+mse(structuredData$scoreDifference, predicted)
+
+rmae(structuredData$scoreDifference, predicted, mean(structuredData$scoreDifference))
+rmse(structuredData$scoreDifference, predicted, mean(structuredData$scoreDifference))
+
+# print("Done")
 
 
 
