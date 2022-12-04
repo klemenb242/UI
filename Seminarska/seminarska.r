@@ -126,12 +126,9 @@ pastWinLoseRatio <- function (teamAbbr, beforeDate, data) {
     homeGamesSelection <- data$homeAbbr == teamAbbr & data$gmDate < beforeDate;
     homeGames <- data[homeGamesSelection,];
     homeWinsRatio <- mean(homeGames$homePTS > homeGames$awayPTS);
-    print(homeWinsRatio);
     awayGamesSelection <- data$awayAbbr == teamAbbr & data$gmDate < beforeDate;
     awayGames <- data[awayGamesSelection,];
     awayWinsRatio <- mean(awayGames$homePTS < awayGames$awayPTS);
-    print(awayWinsRatio)
-    total = sum(homeGamesSelection) + 
     return ((homeWinsRatio + awayWinsRatio) / 2);
 }
 
@@ -186,6 +183,12 @@ for (i in 1:nrow(md)) {
 }
 
 structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
+#
+mydata <- do.call(rbind, mylist)
+# Write the data frame to a CSV file
+write.table(mydata, file = "myfile.csv", row.names = FALSE, sep = ",")
+
+
 # GainRatio omili precenjevanje vecvrednostih attributov
 informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "InfGain"), decreasing = TRUE)
 # na podlagi analize atributov sva odstranila PTSEx, TO, DayOff, 
