@@ -42,8 +42,10 @@ TEAMS = unique(c(md$awayAbbr, md$homeAbbr))
 # barplot(averageThrees, names=SEASONS, main="Povprecno število vseh metov za tri pike v tekmi na sezono");
 
 # # stevilo zmag home ekip vs stevilo zmag away ekip
-# homeWins = table(md$homePTS > md$awayPTS);
-# pie(homeWins, labels=c("Away", "Home"), main="Zmage doma VS zmage v gostovanju", labels = round(values/sum(values)*100, 2)));
+homeWins = table(md$homePTS > md$awayPTS);
+homeWinPercentage <- homeWins / sum(homeWins)
+pie(homeWins, labels=round(homeWinPercentage * 100, 2),
+    main="Zmage doma (modro) VS zmage v gostovanju (belo)")
 
 
 # # najboljsa ekipa po razmerju zmag
@@ -125,40 +127,49 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
 }
 
 
-structuredData <- data.frame();
-for (i in 1:nrow(md)) {
-    game <- md[i,];
-    homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
-    homeTeamGames <- md[homeTeamGamesSelection,];
-    if (nrow(homeTeamGames) == 0) {
-        next;
-    }
-    structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
+# structuredData <- data.frame();
+# for (i in 1:nrow(md)) {
+#     game <- md[i,];
+#     homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
+#     homeTeamGames <- md[homeTeamGamesSelection,];
+#     if (nrow(homeTeamGames) == 0) {
+#         next;
+#     }
+#     structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
 
-    awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
-    awayTeamGames <- md[awayTeamGamesSelection,];
-    if (nrow(awayTeamGames) == 0) {
-        next;
-    }
-    structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
+#     awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
+#     awayTeamGames <- md[awayTeamGamesSelection,];
+#     if (nrow(awayTeamGames) == 0) {
+#         next;
+#     }
+#     structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
     
-    # zdruzeno v vrstico
-    structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
+#     # zdruzeno v vrstico
+#     structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
 
-    # dodamo nove atribute
-    structuredGameData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
-    structuredGameData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
-    structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
-    structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
-    structuredGameData$scoreDifference <- game$homePTS - game$awayPTS;
+#     # dodamo nove atribute
+#     structuredGameData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
+#     structuredGameData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
+#     structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
+#     structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
+#     structuredGameData$scoreDifference <- game$homePTS - game$awayPTS;
 
-    structuredData <- rbind(structuredData, structuredGameData);
-}
+#     structuredData <- rbind(structuredData, structuredGameData);
+# }
 
+
+# ocenjevanje atributov
+# sort(attrEval(isHomeWinner ~ . - scoreDifference, structuredData, "GainRatio"), decreasing = TRUE)
+# sort(attrEval(isHomeWinner ~ . - scoreDifference, structuredData, "Gini"), decreasing = TRUE)
+# #reliefK ni kratkoviden
+# sort(attrEval(isHomeWinner ~ . - scoreDifference, structuredData, "Relief"), decreasing = TRUE)
+
+# sort(attrEval(scoreDifference ~ . - isHomeWinner, structuredData, "MSEofMean"), decreasing = TRUE)
+# sort(attrEval(scoreDifference ~ . - isHomeWinner, structuredData, "RReliefFexpRank"), decreasing = TRUE)
 
 
 # <DEBUG>
-# structuredData <- read.csv("my_file.csv");
+structuredData <- read.csv("myfile.csv");
 print(colnames(structuredData));
 # </DEBUG>
 
@@ -287,7 +298,7 @@ mse <- function(obs, pred)
     pred <- as.numeric(pred);
 	mean((obs - pred)^2)
 }
-# relativna srednja absolutna napaka
+# relativna srednja absolutna napaka (ocenjuje v primerjavi s trivialno predikcijo)
 rmae <- function(obs, pred, mean.val) 
 {  
     obs <- as.numeric(obs);
@@ -321,28 +332,33 @@ test <- splitData[[2]];
 
 
 # Precno preverjanje
-predicted <- vector()
+# predicted <- vector()
 
-for (i in 1:nrow(structuredData))
-{	
-    # linearna regresija
-	model <- lm(scoreDifference ~ . - isHomeWinner, structuredData[-i,])
-	predicted[i] <- predict(model, structuredData[i,])
-}
+# for (i in 1:nrow(structuredData))
+# {	
+#     # linearna regresija
+# 	model <- lm(scoreDifference ~ . - isHomeWinner, structuredData[-i,])
+# 	predicted[i] <- predict(model, structuredData[i,])
+# }
 
-plot(train$scoreDifference)
-points(predicted, col="red")
+# plot(train$scoreDifference)
+# points(predicted, col="red")
 
-mae(structuredData$scoreDifference, predicted)
-mse(structuredData$scoreDifference, predicted)
+# mae(structuredData$scoreDifference, predicted)
+# mse(structuredData$scoreDifference, predicted)
 
-rmae(structuredData$scoreDifference, predicted, mean(structuredData$scoreDifference))
-rmse(structuredData$scoreDifference, predicted, mean(structuredData$scoreDifference))
-
-# print("Done")
+# rmae(structuredData$scoreDifference, predicted, mean(structuredData$scoreDifference))
+# rmse(structuredData$scoreDifference, predicted, mean(structuredData$scoreDifference))
 
 
 
+# K najbližjih sosedov
+library(kknn)
+
+knn.model <- kknn(scoreDifference ~ . - isHomeWinner, train, test, k = 5)
+predicted <- fitted(knn.model)
+mae(test$scoreDifference, predicted)
+rmae(test$scoreDifference, predicted, mean(train$scoreDifference))
 
 
 
