@@ -158,7 +158,12 @@ for (i in 1:nrow(md)) {
 }
 
 
-ocenjevanje atributov
+
+# # <DEBUG>
+# structuredData <- read.csv("myfile.csv");
+# # </DEBUG>
+
+# ocenjevanje atributov
 sort(attrEval(isHomeWinner ~ . - scoreDifference, structuredData, "GainRatio"), decreasing = TRUE)
 sort(attrEval(isHomeWinner ~ . - scoreDifference, structuredData, "Gini"), decreasing = TRUE)
 #reliefK ni kratkoviden
@@ -166,12 +171,6 @@ sort(attrEval(isHomeWinner ~ . - scoreDifference, structuredData, "Relief"), dec
 
 sort(attrEval(scoreDifference ~ . - isHomeWinner, structuredData, "MSEofMean"), decreasing = TRUE)
 sort(attrEval(scoreDifference ~ . - isHomeWinner, structuredData, "RReliefFexpRank"), decreasing = TRUE)
-
-
-# # <DEBUG>
-# structuredData <- read.csv("myfile.csv");
-# print(colnames(structuredData));
-# # </DEBUG>
 
 structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
 
@@ -259,19 +258,13 @@ CA(observed, predicted)
 Sensitivity(observed, predicted, "TRUE")
 Specificity(observed, predicted, "TRUE")
 Precision(observed, predicted, "TRUE")
-predMat <- predict(nb, test, type = "prob")
+predMat <- predict(nb, test, type = "raw")
 brierScore(obsMat, predMat)
 
 
 # RANDOM FOREST
-
-library(randomForest)
-rf <- randomForest(isHomeWinner ~ . - scoreDifference, data = train)
+rf <- CoreModel(isHomeWinner ~ . - scoreDifference, data = train, model="rf")
 predicted <- predict(rf, test, type="class")
-CA(observed, predicted)
-
-predMat <- predict(rf, test, type = "prob")
-brier.score(obsMat, predMat)
 CA(observed, predicted)
 Sensitivity(observed, predicted, "TRUE")
 Specificity(observed, predicted, "TRUE")
