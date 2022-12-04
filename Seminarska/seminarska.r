@@ -258,6 +258,9 @@ obsMat <- class.ind(test$isHomeWinner)
 # brier.score(obsMat, predMat)
 
 
+# REGRESIJA
+
+
 
 
 
