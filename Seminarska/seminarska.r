@@ -115,16 +115,24 @@ structureTeamData <- function(games, position)
     teamStatistics[[attr(position, "PTSEx")]] <- mean(games[[attr(position, "PTSEx")]]);
     
     # percetanges
-    teamStatistics[[attr(position, "FGM")]] <- mean(games[[attr(position, "FGM")]]);
-    teamStatistics[[attr(position, "FGA")]] <- mean(games[[attr(position, "FGA")]]);
-    teamStatistics[[attr(position, "3PA")]] <- mean(games[[attr(position, "3PA")]]);
-    teamStatistics[[attr(position, "3PM")]] <- mean(games[[attr(position, "3PM")]]);
-    teamStatistics[[attr(position, "2PM")]] <- mean(games[[attr(position, "2PM")]]);
-    teamStatistics[[attr(position, "2PA")]] <- mean(games[[attr(position, "2PA")]]);
-    teamStatistics[[attr(position, "FTM")]] <- mean(games[[attr(position, "FTM")]]);
-    teamStatistics[[attr(position, "FTA")]] <- mean(games[[attr(position, "FTA")]]);
+    teamStatistics[[attr(position, "FGR")]] <- mean(games[[attr(position,"FGM")]]) / mean(games[[attr(position, "FGA")]]);
+    teamStatistics[[attr(position, "3PR")]] <- mean(games[[attr(position,"3PM")]]) / mean(games[[attr(position, "3PA")]]);
+    teamStatistics[[attr(position, "2PR")]] <- mean(games[[attr(position,"2PM")]]) / mean(games[[attr(position, "2PA")]]);
+    teamStatistics[[attr(position, "FTR")]] <- mean(games[[attr(position,"FTM")]]) / mean(games[[attr(position, "FTA")]]);
+
     return(teamStatistics);
 }
+
+winsInGamesBefore <- function (teamAbbr, beforeDate, data) {
+    homeGamesSelection <- data$homeAbbr == teamAbbr & data$gmDate < beforeDate;
+    homeGames <- data[homeGamesSelection,];
+    homeWinsRatio <- sum(homeGames$homePTS > homeGames$awayPTS) / length(homeGames$homePTS);
+    awayGamesSelection <- data$awayAbbr == teamAbbr & data$gmDate < beforeDate;
+    awayGames <- data[awayGamesSelection,];
+    awayWinsRatio <- sum(awayGames$homePTS < awayGames$awayPTS) / length(awayGames$awayPTS);
+    return (homeWinsRatio + awayWinsRatio) / 2;
+}
+# slice md to only 3000 games
 
 # strukturiraj podatke za ucenje
 structuredData <- data.frame();
@@ -135,7 +143,10 @@ for (i in 1:nrow(md)) {
     if (nrow(homeTeamGames) == 0) {
         next;
     }
+
     structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
+    structuredHomeTeamData$homeWins <- winsInGamesBefore(game$homeAbbr, game$gmDate, md);
+
 
     awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
     awayTeamGames <- md[awayTeamGamesSelection,];
@@ -143,6 +154,7 @@ for (i in 1:nrow(md)) {
         next;
     }
     structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
+    structuredAwayTeamData$awayWins <- winsInGamesBefore(game$awayAbbr, game$gmDate, md);
     
     structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
     structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
@@ -150,7 +162,9 @@ for (i in 1:nrow(md)) {
 }
 
 structuredData$isHomeWinner <- as.factor(structuredData$isHomeWinner);
-informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "InfGain"), decreasing = TRUE)
+# GainRatio omili precenjevanje vecvrednostih attributov
+informationGain <- sort(attrEval(isHomeWinner ~ ., structuredData, "ReliefFequalK"), decreasing = TRUE)
+# na podlagi analize atributov sva odstranila PTSEx, TO, DayOff, 
 
 
 HOME_TEAM_TO_PREDICT <- "GSW";
