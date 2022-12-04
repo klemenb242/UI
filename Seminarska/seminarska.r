@@ -96,7 +96,16 @@ pastWinLoseRatio <- function (teamAbbr, beforeDate, data) {
     homeWinsRatio <- mean(homeGames$homePTS > homeGames$awayPTS);
     awayGamesSelection <- data$awayAbbr == teamAbbr & data$gmDate < beforeDate;
     awayGames <- data[awayGamesSelection,];
+    if (nrow(homeGames) == 0 && nrow(awayGames) == 0) {
+        return(0);
+    }
     awayWinsRatio <- mean(awayGames$homePTS < awayGames$awayPTS);
+    if (is.na(homeWinsRatio)) {
+        return(awayWinsRatio);
+    }
+    if (is.na(awayWinsRatio)) {
+        return(homeWinsRatio);
+    }
     return ((homeWinsRatio + awayWinsRatio) / 2);
 }
 
@@ -116,40 +125,40 @@ pastMatchesScoreDifference <- function (team1, team2, beforeDate) {
 }
 
 
-# structuredData <- data.frame();
-# for (i in 1:nrow(md)) {
-#     game <- md[i,];
-#     homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
-#     homeTeamGames <- md[homeTeamGamesSelection,];
-#     if (nrow(homeTeamGames) == 0) {
-#         next;
-#     }
-#     structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
+structuredData <- data.frame();
+for (i in 1:nrow(md)) {
+    game <- md[i,];
+    homeTeamGamesSelection <- md$homeAbbr == game$homeAbbr & md$gmDate < game$gmDate;
+    homeTeamGames <- md[homeTeamGamesSelection,];
+    if (nrow(homeTeamGames) == 0) {
+        next;
+    }
+    structuredHomeTeamData = structureTeamData(homeTeamGames, "home");
 
-#     awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
-#     awayTeamGames <- md[awayTeamGamesSelection,];
-#     if (nrow(awayTeamGames) == 0) {
-#         next;
-#     }
-#     structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
+    awayTeamGamesSelection <- md$awayAbbr == game$awayAbbr & md$gmDate < game$gmDate;
+    awayTeamGames <- md[awayTeamGamesSelection,];
+    if (nrow(awayTeamGames) == 0) {
+        next;
+    }
+    structuredAwayTeamData = structureTeamData(awayTeamGames, "away");
     
-#     # zdruzeno v vrstico
-#     structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
+    # zdruzeno v vrstico
+    structuredGameData <- c(structuredHomeTeamData, structuredAwayTeamData);
 
-#     # dodamo nove atribute
-#     structuredGameData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
-#     structuredGameData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
-#     structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
-#     structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
-#     structuredGameData$scoreDifference <- game$homePTS - game$awayPTS;
+    # dodamo nove atribute
+    structuredGameData$homeWins <- pastWinLoseRatio(game$homeAbbr, game$gmDate, md);
+    structuredGameData$awayWins <- pastWinLoseRatio(game$awayAbbr, game$gmDate, md);
+    structuredGameData$pastMatchesScoreDifference <- pastMatchesScoreDifference(game$homeAbbr, game$awayAbbr, game$gmDate);
+    structuredGameData$isHomeWinner <- game$homePTS > game$awayPTS;
+    structuredGameData$scoreDifference <- game$homePTS - game$awayPTS;
 
-#     structuredData <- rbind(structuredData, structuredGameData);
-# }
+    structuredData <- rbind(structuredData, structuredGameData);
+}
 
 
 
 # <DEBUG>
-structuredData <- read.csv("my_file.csv");
+# structuredData <- read.csv("my_file.csv");
 print(colnames(structuredData));
 # </DEBUG>
 
@@ -316,9 +325,7 @@ predicted <- vector()
 
 for (i in 1:nrow(structuredData))
 {	
-	# print(paste("Izlocen primer na indeksu", i))
-	# flush.console()
-
+    # linearna regresija
 	model <- lm(scoreDifference ~ . - isHomeWinner, structuredData[-i,])
 	predicted[i] <- predict(model, structuredData[i,])
 }
