@@ -1,11 +1,12 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
 class Warehouse {
+    private static final char BLOCK_NULL = '\0';
+
     int numRows;
     int numCols;
     public char[][] state;
@@ -43,7 +44,7 @@ class Warehouse {
             throw new IllegalArgumentException("Invalid column index.");
         }
         // if fromCOl is empty
-        if (this.getColumnTop(fromCol) == '\0') {
+        if (this.getColumnTop(fromCol) == BLOCK_NULL) {
             throw new IllegalArgumentException("No block in FROM column " + fromCol);
         }
         // if toCol is full
@@ -52,18 +53,18 @@ class Warehouse {
         }
         // find the row of the top block in the FROM column
         int fromRow = 0;
-        while ((fromRow < numRows - 1) && state[fromRow][fromCol] == '\0') {
+        while ((fromRow < numRows - 1) && state[fromRow][fromCol] == BLOCK_NULL) {
             fromRow++;
         }
         // find the first empty block row in the TO column
         int toRow = 0;
-        while ((toRow < numRows) && state[toRow][toCol] == '\0') {
+        while ((toRow < numRows) && state[toRow][toCol] == BLOCK_NULL) {
             toRow++;
         }
         toRow--;
         // move the block
         state[toRow][toCol] = this.getColumnTop(fromCol);
-        state[fromRow][fromCol] = '\0';
+        state[fromRow][fromCol] = BLOCK_NULL;
         // create a new move
         Move move = new Move(fromRow, fromCol, toRow, toCol);
         addMove(move);
@@ -72,15 +73,15 @@ class Warehouse {
 
     public char getColumnTop(int col) {
         for (int i = 0; i < numRows; i++) {
-            if (state[i][col] != '\0') {
+            if (state[i][col] != BLOCK_NULL) {
                 return state[i][col];
             }
         }
-        return '\0';
+        return BLOCK_NULL;
     }
 
     public boolean isCoulmnFull(int col) {
-        return state[0][col] != '\0';
+        return state[0][col] != BLOCK_NULL;
     }
 
     public String stateToString(char[][] state) {
@@ -138,9 +139,9 @@ class Warehouse {
             for (int i = 0; i < chars.length; i++) {
                 // if character is empty, insert null instead of character
                 if (chars[i].trim().isEmpty())
-                    charArr[i] = '\0';
+                    charArr[i] = BLOCK_NULL;
                 else if (chars[i].trim().charAt(1) == ' ')
-                    charArr[i] = '\0';
+                    charArr[i] = BLOCK_NULL;
                 else
                     charArr[i] = chars[i].trim().charAt(1);
             }
