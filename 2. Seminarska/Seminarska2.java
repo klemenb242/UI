@@ -9,16 +9,22 @@ class Warehouse {
     int numRows;
     int numCols;
     private LinkedList<State> states;
+    private LinkedList<Move> moves;
     private State finalState;
 
     public Warehouse(int numRows, int numCols) {
         this.numRows = numRows;
         this.numCols = numCols;
         this.states = new LinkedList<>();
+        this.moves = new LinkedList<>();
     }
 
     public void addState(State state) {
         states.add(state);
+    }
+
+    public void addMove(Move move) {
+        moves.add(move);
     }
 
     public void setFinalState(State state) {
@@ -85,50 +91,10 @@ class Warehouse {
         // create a new state
         State newState = new State(numRows, numCols, newGrid);
         addState(newState);
+        // create a new move
+        Move move = new Move(fromRow, fromCol, toRow, toCol);
+        addMove(move);
         return newState;
-    }
-
-    // Class representing the state of the warehouse
-    public static class State {
-        public final int numRows;
-        public final int numCols;
-        public final char[][] grid; // grid[row][col]
-
-        public State(int numRows, int numCols, char[][] grid) {
-            this.numRows = numRows;
-            this.numCols = numCols;
-            this.grid = grid;
-        }
-
-        public char getColumnTop(int col) {
-            for (int i = 0; i < numRows; i++) {
-                if (grid[i][col] != '\0') {
-                    return grid[i][col];
-                }
-            }
-            return '\0';
-        }
-
-        public boolean isCoulmnFull(int col) {
-            return this.grid[0][col] != '\0';
-        }
-
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < numRows; i++) {
-                sb.append(i + ": ");
-                for (int j = 0; j < numCols; j++) {
-                    // check if character is null at indexes
-                    if (grid[i][j] == '\u0000') {
-                        sb.append(".");
-                    } else {
-                        sb.append(grid[i][j]);
-                    }
-                }
-                sb.append(" ");
-            }
-            return sb.toString();
-        }
     }
 
     public String toString() {
@@ -200,6 +166,63 @@ class Warehouse {
         }
         State state = new State(numRows, numCols, grid);
         return state;
+    }
+
+    public class Move {
+        int fromRow;
+        int fromCol;
+        int toRow;
+        int toCol;
+
+        public Move(int fromRow, int fromCol, int toRow, int toCol) {
+            this.fromRow = fromRow;
+            this.fromCol = fromCol;
+            this.toRow = toRow;
+            this.toCol = toCol;
+        }
+    }
+
+    // Class representing the state of the warehouse
+    public static class State {
+        public final int numRows;
+        public final int numCols;
+        public final char[][] grid; // grid[row][col]
+
+        public State(int numRows, int numCols, char[][] grid) {
+            this.numRows = numRows;
+            this.numCols = numCols;
+            this.grid = grid;
+        }
+
+        public char getColumnTop(int col) {
+            for (int i = 0; i < numRows; i++) {
+                if (grid[i][col] != '\0') {
+                    return grid[i][col];
+                }
+            }
+            return '\0';
+        }
+
+        public boolean isCoulmnFull(int col) {
+            return this.grid[0][col] != '\0';
+        }
+
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < numRows; i++) {
+                sb.append(i + ": ");
+                for (int j = 0; j < numCols; j++) {
+                    // check if character is null at indexes
+                    if (grid[i][j] == '\u0000') {
+                        sb.append(".");
+                    } else {
+                        sb.append(grid[i][j]);
+                    }
+                }
+                sb.append(" ");
+            }
+            return sb.toString();
+        }
     }
 }
 
