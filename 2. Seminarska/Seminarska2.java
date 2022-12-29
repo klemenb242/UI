@@ -63,7 +63,7 @@ class Warehouse {
         }
         toRow--;
         // move the block
-        state[toRow][toCol] = this.getColumnTop(fromCol);
+        state[toRow][toCol] = state[fromRow][fromCol];
         state[fromRow][fromCol] = BLOCK_NULL;
         // create a new move
         Move move = new Move(fromRow, fromCol, toRow, toCol);
@@ -90,7 +90,7 @@ class Warehouse {
             sb.append(i + ": ");
             for (int j = 0; j < numCols; j++) {
                 // check if character is null at indexes
-                if (state[i][j] == '\u0000') {
+                if (state[i][j] == BLOCK_NULL) {
                     sb.append(".");
                 } else {
                     sb.append(state[i][j]);
