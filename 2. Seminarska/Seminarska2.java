@@ -8,112 +8,113 @@ import java.util.*;
 class Warehouse {
     int numRows;
     int numCols;
-    private LinkedList<State> states;
+    public char[][] state;
+    private char[][] finalState;
     private LinkedList<Move> moves;
-    private State finalState;
 
-    public Warehouse(int numRows, int numCols) {
+    public Warehouse(int numRows, int numCols, char[][] state) {
         this.numRows = numRows;
         this.numCols = numCols;
-        this.states = new LinkedList<>();
         this.moves = new LinkedList<>();
-    }
-
-    public void addState(State state) {
-        states.add(state);
+        this.state = state;
     }
 
     public void addMove(Move move) {
         moves.add(move);
     }
 
-    public void setFinalState(State state) {
+    public void setFinalState(char[][] state) {
         this.finalState = state;
     }
 
-    public State currentState() {
-        return this.states.getLast();
-    }
-
-    public State getInitialState(State state) {
-        return states.getFirst();
-    }
-
-    public State getStateAt(int index) {
-        return states.get(index);
-    }
-
-    public int getNumStates() {
-        return states.size();
-    }
-
     public boolean isSolved() {
-        String currentStateString = currentState().toString();
-        String finalStateString = finalState.toString();
-        return currentStateString.equals(finalStateString);
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (state[i][j] != finalState[i][j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
-    public State move(int fromCol, int toCol) throws IllegalArgumentException {
+    public Move move(int fromCol, int toCol) throws IllegalArgumentException {
         if (fromCol < 0 || fromCol >= numCols || toCol < 0 || toCol >= numCols) {
             throw new IllegalArgumentException("Invalid column index.");
         }
-        State currentState = currentState();
         // if fromCOl is empty
-        if (currentState.getColumnTop(fromCol) == '\0') {
+        if (this.getColumnTop(fromCol) == '\0') {
             throw new IllegalArgumentException("No block in FROM column " + fromCol);
         }
         // if toCol is full
-        if (currentState.isCoulmnFull(toCol)) {
+        if (this.isCoulmnFull(toCol)) {
             throw new IllegalArgumentException("TO column " + toCol + " is full.");
-        }
-        // create a new grid
-        char[][] newGrid = new char[numRows][numCols];
-        // copy the current grid
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                newGrid[i][j] = currentState.grid[i][j];
-            }
         }
         // find the row of the top block in the FROM column
         int fromRow = 0;
-        while ((fromRow < numRows - 1) && newGrid[fromRow][fromCol] == '\0') {
+        while ((fromRow < numRows - 1) && state[fromRow][fromCol] == '\0') {
             fromRow++;
         }
         // find the first empty block row in the TO column
         int toRow = 0;
-        while ((toRow < numRows) && newGrid[toRow][toCol] == '\0') {
+        while ((toRow < numRows) && state[toRow][toCol] == '\0') {
             toRow++;
         }
         toRow--;
         // move the block
-        newGrid[toRow][toCol] = currentState.getColumnTop(fromCol);
-        newGrid[fromRow][fromCol] = '\0';
-        // create a new state
-        State newState = new State(numRows, numCols, newGrid);
-        addState(newState);
+        state[toRow][toCol] = this.getColumnTop(fromCol);
+        state[fromRow][fromCol] = '\0';
         // create a new move
         Move move = new Move(fromRow, fromCol, toRow, toCol);
         addMove(move);
-        return newState;
+        return move;
+    }
+
+    public char getColumnTop(int col) {
+        for (int i = 0; i < numRows; i++) {
+            if (state[i][col] != '\0') {
+                return state[i][col];
+            }
+        }
+        return '\0';
+    }
+
+    public boolean isCoulmnFull(int col) {
+        return state[0][col] != '\0';
+    }
+
+    public String stateToString(char[][] state) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numRows; i++) {
+            sb.append(i + ": ");
+            for (int j = 0; j < numCols; j++) {
+                // check if character is null at indexes
+                if (state[i][j] == '\u0000') {
+                    sb.append(".");
+                } else {
+                    sb.append(state[i][j]);
+                }
+            }
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 
     public String toString() {
-        return currentState().toString();
+        return stateToString(state);
     }
 
     public static Warehouse createWareHouse(String fileInitial, String fileFinal) throws IOException {
-        Warehouse.State initialState = Warehouse.readStateFromFile(fileInitial);
-        Warehouse.State finalState = Warehouse.readStateFromFile(fileFinal);
-        if (initialState.numRows != finalState.numRows || initialState.numCols != finalState.numCols) {
-            throw new IllegalArgumentException("The initial and final states must have the same dimensions.");
-        }
-        Warehouse warehouse = new Warehouse(initialState.numRows, initialState.numCols);
-        warehouse.addState(initialState);
+        char[][] initialState = Warehouse.readStateFromFile(fileInitial);
+        char[][] finalState = Warehouse.readStateFromFile(fileFinal);
+        int numRows = initialState.length;
+        int numCols = initialState[0].length;
+        Warehouse warehouse = new Warehouse(numRows, numCols, initialState);
         warehouse.setFinalState(finalState);
         return warehouse;
     }
 
-    public static State readStateFromFile(String fileName)
+    public static char[][] readStateFromFile(String fileName)
             throws FileNotFoundException, IOException {
 
         // read the file into the buffer
@@ -156,15 +157,14 @@ class Warehouse {
         int numCols = rows.get(0).length;
 
         // create the 2D char array
-        char[][] grid = new char[numRows][numCols];
+        char[][] state = new char[numRows][numCols];
 
         // populate the 2D array with characters
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
-                grid[i][j] = rows.get(i)[j];
+                state[i][j] = rows.get(i)[j];
             }
         }
-        State state = new State(numRows, numCols, grid);
         return state;
     }
 
@@ -179,49 +179,6 @@ class Warehouse {
             this.fromCol = fromCol;
             this.toRow = toRow;
             this.toCol = toCol;
-        }
-    }
-
-    // Class representing the state of the warehouse
-    public static class State {
-        public final int numRows;
-        public final int numCols;
-        public final char[][] grid; // grid[row][col]
-
-        public State(int numRows, int numCols, char[][] grid) {
-            this.numRows = numRows;
-            this.numCols = numCols;
-            this.grid = grid;
-        }
-
-        public char getColumnTop(int col) {
-            for (int i = 0; i < numRows; i++) {
-                if (grid[i][col] != '\0') {
-                    return grid[i][col];
-                }
-            }
-            return '\0';
-        }
-
-        public boolean isCoulmnFull(int col) {
-            return this.grid[0][col] != '\0';
-        }
-
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < numRows; i++) {
-                sb.append(i + ": ");
-                for (int j = 0; j < numCols; j++) {
-                    // check if character is null at indexes
-                    if (grid[i][j] == '\u0000') {
-                        sb.append(".");
-                    } else {
-                        sb.append(grid[i][j]);
-                    }
-                }
-                sb.append(" ");
-            }
-            return sb.toString();
         }
     }
 }
