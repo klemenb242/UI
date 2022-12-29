@@ -28,6 +28,43 @@ class Warehouse {
         this.finalState = state;
     }
 
+    public double stateScore() {
+        double score = 0.0;
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (state[i][j] == BLOCK_NULL) {
+                    continue;
+                }
+                if (state[i][j] == finalState[i][j]) {
+                    // if block is in the correct position, add 1.0 to the score
+                    score += 1.0;
+                } else {
+                    // check if element is in the same column
+                    for (int row = 0; row < numRows; row++) {
+                        if (state[i][j] == finalState[row][j]) {
+                            // if block is in the same column, add 0.2 to the score
+                            score += 0.2;
+                        }
+                    }
+                    // check if block is in an adjacent position to its desired position
+                    for (int row = Math.max(0, i - 1); row <= Math.min(numRows - 1, i + 1); row++) {
+                        for (int col = Math.max(0, j - 1); col <= Math.min(numCols - 1, j + 1); col++) {
+                            if (state[i][j] == finalState[row][col]) {
+                                // if block is in an adjacent position, add 0.1 to the score
+                                if (col == j) {
+                                    score += 0.3;
+                                } else {
+                                    score += 0.1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return score;
+    }
+
     public boolean isSolved() {
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
@@ -182,21 +219,4 @@ class Warehouse {
             this.toCol = toCol;
         }
     }
-}
-
-public class Seminarska2 {
-
-    public static void main(String[] args) throws IOException {
-        Warehouse warehouse = Warehouse.createWareHouse("test_zacetna.txt", "test_koncna.txt");
-        System.out.println(warehouse);
-        warehouse.move(0, 2);
-        System.out.println(warehouse);
-        warehouse.move(0, 1);
-        System.out.println(warehouse);
-        warehouse.move(2, 1);
-        System.out.println(warehouse);
-        System.out.println(warehouse.isSolved());
-
-    }
-
 }
