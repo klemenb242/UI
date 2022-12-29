@@ -43,7 +43,7 @@ class Warehouse {
                     for (int row = 0; row < numRows; row++) {
                         if (state[i][j] == finalState[row][j]) {
                             // if block is in the same column, add 0.2 to the score
-                            score += 0.2;
+                            score += 0.02;
                         }
                     }
                     // check if block is in an adjacent position to its desired position
@@ -52,9 +52,9 @@ class Warehouse {
                             if (state[i][j] == finalState[row][col]) {
                                 // if block is in an adjacent position, add 0.1 to the score
                                 if (col == j) {
-                                    score += 0.3;
+                                    score += 0.03;
                                 } else {
-                                    score += 0.1;
+                                    score += 0.01;
                                 }
                             }
                         }
@@ -77,6 +77,9 @@ class Warehouse {
     }
 
     public Move move(int fromCol, int toCol) throws IllegalArgumentException {
+        if (fromCol == toCol) {
+            throw new IllegalArgumentException("FROM and TO columns are the same.");
+        }
         if (fromCol < 0 || fromCol >= numCols || toCol < 0 || toCol >= numCols) {
             throw new IllegalArgumentException("Invalid column index.");
         }
@@ -105,6 +108,22 @@ class Warehouse {
         // create a new move
         Move move = new Move(fromRow, fromCol, toRow, toCol);
         addMove(move);
+        return move;
+    }
+
+    public Move makeRandomMove() {
+        Random random = new Random();
+        Move move = null;
+        int fromCol;
+        int toCol;
+        while (move == null) {
+            fromCol = random.nextInt(numCols);
+            toCol = random.nextInt(numCols);
+            try {
+                move = move(fromCol, toCol);
+            } catch (Exception ignore) {
+            }
+        }
         return move;
     }
 
@@ -142,13 +161,18 @@ class Warehouse {
         return stateToString(state);
     }
 
-    public static Warehouse createWareHouse(String fileInitial, String fileFinal) throws IOException {
-        char[][] initialState = Warehouse.readStateFromFile(fileInitial);
-        char[][] finalState = Warehouse.readStateFromFile(fileFinal);
+    public static Warehouse create(char[][] initialState, char[][] finalState) {
         int numRows = initialState.length;
         int numCols = initialState[0].length;
         Warehouse warehouse = new Warehouse(numRows, numCols, initialState);
         warehouse.setFinalState(finalState);
+        return warehouse;
+    }
+
+    public static Warehouse createWareHouse(String fileInitial, String fileFinal) throws IOException {
+        char[][] initialState = Warehouse.readStateFromFile(fileInitial);
+        char[][] finalState = Warehouse.readStateFromFile(fileFinal);
+        Warehouse warehouse = Warehouse.create(initialState, finalState);
         return warehouse;
     }
 
