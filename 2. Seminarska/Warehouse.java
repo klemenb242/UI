@@ -27,6 +27,10 @@ class Warehouse {
         moves.add(move);
     }
 
+    public int getNumberOfMoves() {
+        return moves.size();
+    }
+
     public double stateScore() {
         double score = 0.0;
         for (int i = 0; i < numRows; i++) {
@@ -154,6 +158,17 @@ class Warehouse {
 
     public String toString() {
         return stateToString(state);
+    }
+
+    public Warehouse deepClone() {
+        char[][] clonedState = Arrays.stream(this.state).map(el -> el.clone()).toArray($ -> this.state.clone());
+        char[][] clonedFinalState = Arrays.stream(this.finalState).map(el -> el.clone())
+                .toArray($ -> this.finalState.clone());
+        LinkedList<Move> clonedmoves = new LinkedList<>(moves);
+        Warehouse clone = new Warehouse(clonedState, clonedFinalState);
+        clone.moves = clonedmoves;
+        clone.fitness = this.fitness;
+        return clone;
     }
 
     public static Warehouse createFromFile(String fileInitial, String fileFinal) throws IOException {
