@@ -40,17 +40,14 @@ class GeneticAlgorithm {
     // evaluate the fitness of each individual in the population using the rating
     // system
     public void evaluateFitness() {
-        double maxFitness = 0;
         // Calculate the fitness score for each individual in the population
         for (Warehouse warehouse : population) {
             warehouse.fitness = warehouse.stateScore();
-            if (warehouse.fitness > maxFitness) {
-                maxFitness = warehouse.fitness;
-                if (warehouse.isSolved()) {
-                    solvedWarehouse = warehouse;
-                    break;
-                }
+            if (warehouse.isSolved()) {
+                solvedWarehouse = warehouse;
+                break;
             }
+
         }
     }
 
@@ -111,8 +108,8 @@ class GeneticAlgorithm {
 }
 
 public class Genetsko {
-    static String initialFile = "primer5_zacetna.txt";
-    static String finalFile = "primer5_koncna.txt";
+    static String initialFile = "primer1_zacetna.txt";
+    static String finalFile = "primer1_koncna.txt";
 
     public static void main(String[] args) throws Exception {
         char[][] initialState = Warehouse.readStateFromFile(initialFile);
