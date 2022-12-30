@@ -1,33 +1,74 @@
 import java.util.Random;
-
-import java.util.Random;
+import java.util.*;
 
 class GeneticAlgorithm {
+    private static int POPULATION_SIZE = 10;
+
+    List<Warehouse> population;
+
     char[][] initialState;
     char[][] finalState;
 
     public GeneticAlgorithm(char[][] initialState, char[][] finalState) {
         this.initialState = initialState;
         this.finalState = finalState;
+        this.population = new ArrayList<>();
     }
 
     // initialize population of individuals with random values
     public void initializePopulation() {
+        for (int i = 0; i < POPULATION_SIZE; i++) {
+            Warehouse warehouse = new Warehouse(initialState, finalState);
+            Warehouse.Move move = warehouse.makeRandomMove();
+            System.out.println(warehouse);
+            System.out.println(warehouse.stateScore());
+            population.add(warehouse);
+        }
     }
 
     // evaluate the fitness of each individual in the population using the rating
     // system
     public void evaluateFitness() {
+        // Calculate the fitness score for each individual in the population
+        for (Warehouse warehouse : population) {
+            warehouse.fitness = warehouse.stateScore();
+        }
     }
 
-    // select the fittest individuals from the population to be the parents for the
-    // next generation
-    public void selectParents() {
+    public Warehouse[] selectParents() {
+        // Calculate the total fitness score of all individuals in the population
+        int totalFitness = 0;
+        for (Warehouse warehouse : population) {
+            totalFitness += warehouse.fitness;
+        }
+
+        // Select the first parent using the roulette wheel selection method
+        int randomNumber = new Random().nextInt(totalFitness);
+        int runningTotal = 0;
+        Warehouse parent1 = null;
+        for (Warehouse warehouse : population) {
+            runningTotal += warehouse.fitness;
+            if (runningTotal > randomNumber) {
+                parent1 = warehouse;
+                break;
+            }
+        }
+
+        // Select the second parent using the roulette wheel selection method
+        randomNumber = new Random().nextInt(totalFitness);
+        runningTotal = 0;
+        Warehouse parent2 = null;
+        for (Warehouse warehouse : population) {
+            runningTotal += warehouse.fitness;
+            if (runningTotal > randomNumber) {
+                parent2 = warehouse;
+                break;
+            }
+        }
+        return new Warehouse[] { parent1, parent2 };
     }
 
-    // generate the next generation of individuals by applying genetic operators to
-    // the parents
-    public void generateNextGeneration() {
+    public void generateNextGeneration(Warehouse[] parents) {
     }
 
     // repeat the above steps for a predetermined number of generations or until a
@@ -36,31 +77,21 @@ class GeneticAlgorithm {
         initializePopulation();
         while (true) {
             evaluateFitness();
-            selectParents();
-            generateNextGeneration();
+            Warehouse[] parents = selectParents();
+            generateNextGeneration(parents);
         }
     }
 }
 
 public class Genetsko {
+    static String initialFile = "primer1_zacetna.txt";
+    static String finalFile = "primer1_koncna.txt";
 
     public static void main(String[] args) throws Exception {
-        Warehouse warehouse = Warehouse.createWareHouse("test_zacetna.txt", "test_koncna.txt");
-        Random random = new Random();
-        for (int i = 0; i < 100; i++) {
-            try {
-                int x = random.nextInt(warehouse.numCols);
-                int y = random.nextInt(warehouse.numCols);
-                warehouse.move(x, y);
-                System.out.println(warehouse);
-                System.out.println(warehouse.stateScore());
-                System.out.println("---------------");
-
-            } catch (Exception e) {
-                System.out.println("Fail");
-            }
-        }
-
+        char[][] initialState = Warehouse.readStateFromFile(initialFile);
+        char[][] finalState = Warehouse.readStateFromFile(finalFile);
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState);
+        geneticAlgorithm.run();
     }
 
 }

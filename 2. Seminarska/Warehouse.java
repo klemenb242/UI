@@ -13,19 +13,18 @@ class Warehouse {
     private char[][] finalState;
     private LinkedList<Move> moves;
 
-    public Warehouse(int numRows, int numCols, char[][] state) {
-        this.numRows = numRows;
-        this.numCols = numCols;
+    public double fitness;
+
+    public Warehouse(char[][] initialState, char[][] finalState) {
+        this.state = initialState;
+        this.numRows = initialState.length;
+        this.numCols = initialState[0].length;
+        this.finalState = finalState;
         this.moves = new LinkedList<>();
-        this.state = state;
     }
 
     public void addMove(Move move) {
         moves.add(move);
-    }
-
-    public void setFinalState(char[][] state) {
-        this.finalState = state;
     }
 
     public double stateScore() {
@@ -43,7 +42,7 @@ class Warehouse {
                     for (int row = 0; row < numRows; row++) {
                         if (state[i][j] == finalState[row][j]) {
                             // if block is in the same column, add 0.2 to the score
-                            score += 0.02;
+                            score += 0.2;
                         }
                     }
                     // check if block is in an adjacent position to its desired position
@@ -51,11 +50,7 @@ class Warehouse {
                         for (int col = Math.max(0, j - 1); col <= Math.min(numCols - 1, j + 1); col++) {
                             if (state[i][j] == finalState[row][col]) {
                                 // if block is in an adjacent position, add 0.1 to the score
-                                if (col == j) {
-                                    score += 0.03;
-                                } else {
-                                    score += 0.01;
-                                }
+                                score += 0.1;
                             }
                         }
                     }
@@ -161,18 +156,10 @@ class Warehouse {
         return stateToString(state);
     }
 
-    public static Warehouse create(char[][] initialState, char[][] finalState) {
-        int numRows = initialState.length;
-        int numCols = initialState[0].length;
-        Warehouse warehouse = new Warehouse(numRows, numCols, initialState);
-        warehouse.setFinalState(finalState);
-        return warehouse;
-    }
-
-    public static Warehouse createWareHouse(String fileInitial, String fileFinal) throws IOException {
+    public static Warehouse createFromFile(String fileInitial, String fileFinal) throws IOException {
         char[][] initialState = Warehouse.readStateFromFile(fileInitial);
         char[][] finalState = Warehouse.readStateFromFile(fileFinal);
-        Warehouse warehouse = Warehouse.create(initialState, finalState);
+        Warehouse warehouse = new Warehouse(initialState, finalState);
         return warehouse;
     }
 
