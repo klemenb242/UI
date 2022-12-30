@@ -3,20 +3,26 @@ import java.util.Random;
 import java.util.*;
 
 class GeneticAlgorithm {
-    private static int POPULATION_SIZE = 10;
+    public static int POPULATION_SIZE = 10;
+    public static int DEFAULT_GENERATION_LIMIT = 1000;
 
     List<Warehouse> population;
 
     Warehouse solvedWarehouse;
+
+    // If we have a solution, that is better than the best solution we have seen,
+    // quit
+    int generationLimit = DEFAULT_GENERATION_LIMIT;
 
     int generation = 0;
 
     char[][] initialState;
     char[][] finalState;
 
-    public GeneticAlgorithm(char[][] initialState, char[][] finalState) {
+    public GeneticAlgorithm(char[][] initialState, char[][] finalState, int generationLimit) {
         this.initialState = initialState;
         this.finalState = finalState;
+        this.generationLimit = generationLimit;
         this.population = new ArrayList<>();
         solvedWarehouse = null;
     }
@@ -95,7 +101,7 @@ class GeneticAlgorithm {
     // satisfactory solution is found
     public Warehouse run() {
         initializePopulation();
-        while (solvedWarehouse == null) {
+        while (generation < generationLimit && solvedWarehouse == null) {
             evaluateFitness();
             if (solvedWarehouse != null)
                 break;
@@ -114,11 +120,18 @@ public class Genetsko {
         char[][] finalState = Warehouse.readStateFromFile(finalFile);
 
         ArrayList<Warehouse> solutions = new ArrayList<>();
-        for (int i = 0; i < 50; i++) {
-            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState);
-            solutions.add(geneticAlgorithm.run());
+        int bestNumberOfGen = GeneticAlgorithm.DEFAULT_GENERATION_LIMIT;
+
+        for (int i = 0; i < 1000; i++) {
+            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState, bestNumberOfGen);
+            Warehouse solution = geneticAlgorithm.run();
+            if (solution != null && solution.getNumberOfMoves() < bestNumberOfGen) {
+                bestNumberOfGen = solution.getNumberOfMoves();
+                solutions.add(solution);
+            }
             System.out.println("Found solution in " + geneticAlgorithm.generation + " generations");
         }
+
         // sort solutions by number of moves
         solutions.sort((a, b) -> Integer.compare(a.getNumberOfMoves(), b.getNumberOfMoves()));
         Warehouse best = solutions.get(0);
