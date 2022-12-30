@@ -121,7 +121,14 @@ public class Genetsko {
         }
         // sort solutions by number of moves
         solutions.sort((a, b) -> Integer.compare(a.getNumberOfMoves(), b.getNumberOfMoves()));
-        System.out.println("Best solution found in " + solutions.get(0).getNumberOfMoves() + " moves");
+        Warehouse best = solutions.get(0);
+        System.out.println(best.isSolved());
+        System.out.println("Best solution found in " + best.getNumberOfMoves() + " moves");
+        Warehouse temp = new Warehouse(initialState, finalState);
+        for (Warehouse.Move move : best.getMoves()) {
+            temp.move(move.getFromCol(), move.getToCol());
+            System.out.println(temp);
+        }
     }
 
 }

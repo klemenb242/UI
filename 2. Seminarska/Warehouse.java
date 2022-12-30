@@ -16,7 +16,7 @@ class Warehouse {
     public double fitness;
 
     public Warehouse(char[][] initialState, char[][] finalState) {
-        this.state = initialState;
+        this.state = Warehouse.cloneState(initialState);
         this.numRows = initialState.length;
         this.numCols = initialState[0].length;
         this.finalState = finalState;
@@ -27,8 +27,16 @@ class Warehouse {
         moves.add(move);
     }
 
+    public void overwriteMoves(LinkedList<Move> moves) {
+        this.moves = moves;
+    }
+
     public int getNumberOfMoves() {
         return moves.size();
+    }
+
+    public LinkedList<Move> getMoves() {
+        return moves;
     }
 
     public double stateScore() {
@@ -161,14 +169,19 @@ class Warehouse {
     }
 
     public Warehouse deepClone() {
-        char[][] clonedState = Arrays.stream(this.state).map(el -> el.clone()).toArray($ -> this.state.clone());
-        char[][] clonedFinalState = Arrays.stream(this.finalState).map(el -> el.clone())
-                .toArray($ -> this.finalState.clone());
-        LinkedList<Move> clonedmoves = new LinkedList<>(moves);
-        Warehouse clone = new Warehouse(clonedState, clonedFinalState);
-        clone.moves = clonedmoves;
+        Warehouse clone = new Warehouse(state, finalState);
+        LinkedList<Move> clonedMoves = new LinkedList<>(moves);
+        clone.overwriteMoves(clonedMoves);
         clone.fitness = this.fitness;
         return clone;
+    }
+
+    public static char[][] cloneState(char[][] state) {
+        char[][] clonedState = new char[state.length][state[0].length];
+        for (int i = 0; i < state.length; i++) {
+            clonedState[i] = state[i].clone();
+        }
+        return clonedState;
     }
 
     public static Warehouse createFromFile(String fileInitial, String fileFinal) throws IOException {
@@ -243,6 +256,18 @@ class Warehouse {
             this.fromCol = fromCol;
             this.toRow = toRow;
             this.toCol = toCol;
+        }
+
+        public int getFromCol() {
+            return fromCol;
+        }
+
+        public int getToCol() {
+            return toCol;
+        }
+
+        public String toString() {
+            return fromCol + " -> " + toCol;
         }
     }
 }
