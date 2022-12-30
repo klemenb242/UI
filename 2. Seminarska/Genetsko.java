@@ -3,7 +3,7 @@ import java.util.Random;
 import java.util.*;
 
 class GeneticAlgorithm {
-    public static int POPULATION_SIZE = 10;
+    public static int POPULATION_SIZE = 15;
     public static int DEFAULT_GENERATION_LIMIT = 1000;
 
     List<Warehouse> population;
@@ -52,7 +52,6 @@ class GeneticAlgorithm {
                 }
             }
         }
-        System.out.println("Max fitness of " + generation + ": " + maxFitness);
     }
 
     public Warehouse selectParent() {
@@ -112,24 +111,24 @@ class GeneticAlgorithm {
 }
 
 public class Genetsko {
-    static String initialFile = "primer2_zacetna.txt";
-    static String finalFile = "primer2_koncna.txt";
+    static String initialFile = "primer5_zacetna.txt";
+    static String finalFile = "primer5_koncna.txt";
 
     public static void main(String[] args) throws Exception {
         char[][] initialState = Warehouse.readStateFromFile(initialFile);
         char[][] finalState = Warehouse.readStateFromFile(finalFile);
 
         ArrayList<Warehouse> solutions = new ArrayList<>();
-        int bestNumberOfGen = GeneticAlgorithm.DEFAULT_GENERATION_LIMIT;
+        int generationLimit = GeneticAlgorithm.DEFAULT_GENERATION_LIMIT;
 
         for (int i = 0; i < 1000; i++) {
-            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState, bestNumberOfGen);
+            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState, generationLimit);
             Warehouse solution = geneticAlgorithm.run();
-            if (solution != null && solution.getNumberOfMoves() < bestNumberOfGen) {
-                bestNumberOfGen = solution.getNumberOfMoves();
+            if (solution != null && solution.getNumberOfMoves() < generationLimit) {
+                generationLimit = solution.getNumberOfMoves();
                 solutions.add(solution);
+                System.out.println("Found solution in " + geneticAlgorithm.generation + " generations");
             }
-            System.out.println("Found solution in " + geneticAlgorithm.generation + " generations");
         }
 
         // sort solutions by number of moves
