@@ -81,8 +81,8 @@ class GeneticAlgorithm {
     public void generateNextGeneration() {
         // sort population by fitness
         population.sort((a, b) -> Double.compare(b.fitness, a.fitness));
-        Warehouse parent1 = selectParent();
-        Warehouse parent2 = selectParent();
+        Warehouse parent1 = population.get(0);
+        Warehouse parent2 = population.get(1);
         Warehouse child1 = parent1.deepClone();
         Warehouse child2 = parent2.deepClone();
         // replace child1 and child2 with the worst individuals in the population
@@ -141,6 +141,7 @@ public class Genetsko {
             temp.move(move.getFromCol(), move.getToCol());
             System.out.println(temp);
         }
+        System.out.println("Number of solutions found: " + solutions.size());
     }
 
 }
