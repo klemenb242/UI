@@ -26,8 +26,14 @@ class Warehouse {
     }
 
     private double scoreForPosition(Position currentP, Position finalP) {
-        return Math.sqrt(
+        double distance = Math.sqrt(
                 Math.pow(currentP.getRow() - finalP.getRow(), 2) + Math.pow(currentP.getCol() - finalP.getCol(), 2));
+        // if the block is in the same column, but not in the right row, then it is at
+        // least 3 moves away from its final position
+        if (currentP.getCol() == finalP.getCol()) {
+            distance += 3;
+        }
+        return distance;
     }
 
     public double calculateStateScore() {
