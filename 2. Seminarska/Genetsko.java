@@ -54,7 +54,7 @@ class GeneticAlgorithm {
         // sort population by fitness
         population.sort((a, b) -> Double.compare(-b.fitness, -a.fitness));
         // clone 30% of best performers and replace with worst
-        int warehousesToCrossover = (int) (POPULATION_SIZE * 0.333);
+        int warehousesToCrossover = (int) (POPULATION_SIZE * 0.5);
         for (int i = 0; i < warehousesToCrossover; i++) {
             Warehouse parent = population.get(i);
             Warehouse child = parent.deepClone();
