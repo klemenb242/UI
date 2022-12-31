@@ -39,7 +39,7 @@ class Warehouse {
         return stateMap;
     }
 
-    public double stateScore() {
+    public double calculateStateScore() {
         double score = 0.0;
         HashMap<Character, int[]> currentStateMap = generateStateMap(state);
         // calculate distance of each block from its final position
@@ -95,6 +95,7 @@ class Warehouse {
         // create a new move
         Move move = new Move(fromRow, fromCol, toRow, toCol);
         addMove(move);
+        this.fitness = calculateStateScore();
         return move;
     }
 

@@ -42,7 +42,6 @@ class GeneticAlgorithm {
     public void evaluateFitness() {
         // Calculate the fitness score for each individual in the population
         for (Warehouse warehouse : population) {
-            warehouse.fitness = warehouse.stateScore();
             if (warehouse.isSolved()) {
                 solvedWarehouse = warehouse;
                 break;
@@ -51,40 +50,10 @@ class GeneticAlgorithm {
 
     }
 
-    public Warehouse selectParent() {
-        // Calculate the total fitness score of all individuals in the population
-        double totalFitness = 0;
-        for (Warehouse warehouse : population) {
-            totalFitness += warehouse.fitness;
-        }
-        if (totalFitness == 0) {
-            return population.get(new Random().nextInt(POPULATION_SIZE));
-        }
-        // Select the first parent using the roulette wheel selection method
-        double randomNumber = new Random().nextDouble() * totalFitness;
-        double runningTotal = 0;
-        Warehouse parent = null;
-        for (Warehouse warehouse : population) {
-            runningTotal += warehouse.fitness;
-            if (runningTotal > randomNumber) {
-                parent = warehouse;
-                break;
-            }
-        }
-        return parent;
-
-    }
-
     public void generateNextGeneration() {
         // sort population by fitness
         population.sort((a, b) -> Double.compare(-b.fitness, -a.fitness));
-        Warehouse parent1 = population.get(0);
-        Warehouse parent2 = population.get(1);
-        Warehouse child1 = parent1.deepClone();
-        Warehouse child2 = parent2.deepClone();
-        // replace child1 and child2 with the worst individuals in the population
-        population.set(population.size() - 1, child1);
-        population.set(population.size() - 2, child2);
+        // clone 30% of best performers and replace with worst
         int warehousesToCrossover = (int) (POPULATION_SIZE * 0.333);
         for (int i = 0; i < warehousesToCrossover; i++) {
             Warehouse parent = population.get(i);
