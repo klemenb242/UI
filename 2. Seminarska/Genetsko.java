@@ -52,9 +52,9 @@ class GeneticAlgorithm {
 
     public void generateNextGeneration() {
         // sort population by fitness
-        population.sort((a, b) -> Double.compare(-b.fitness, -a.fitness));
+        population.sort((a, b) -> Double.compare(-b.stateScore, -a.stateScore));
         // clone 30% of best performers and replace with worst
-        int warehousesToCrossover = (int) (POPULATION_SIZE * 0.5);
+        int warehousesToCrossover = (int) (POPULATION_SIZE * 0.3);
         for (int i = 0; i < warehousesToCrossover; i++) {
             Warehouse parent = population.get(i);
             Warehouse child = parent.deepClone();
@@ -68,8 +68,6 @@ class GeneticAlgorithm {
 
     }
 
-    // repeat the above steps for a predetermined number of generations or until a
-    // satisfactory solution is found
     public Warehouse run() {
         initializePopulation();
         while (generation < generationLimit && solvedWarehouse == null) {
@@ -83,8 +81,8 @@ class GeneticAlgorithm {
 }
 
 public class Genetsko {
-    static String initialFile = "primer4_zacetna.txt";
-    static String finalFile = "primer4_koncna.txt";
+    static String initialFile = "primer5_zacetna.txt";
+    static String finalFile = "primer5_koncna.txt";
 
     public static void main(String[] args) throws Exception {
         char[][] initialState = Warehouse.readStateFromFile(initialFile);

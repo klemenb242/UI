@@ -14,7 +14,7 @@ class Warehouse {
     HashMap<Character, int[]> finalStateMap;
     private LinkedList<Move> moves;
 
-    public double fitness;
+    public double stateScore;
 
     public Warehouse(char[][] initialState, char[][] finalState) {
         this.state = Warehouse.cloneState(initialState);
@@ -95,7 +95,7 @@ class Warehouse {
         // create a new move
         Move move = new Move(fromRow, fromCol, toRow, toCol);
         addMove(move);
-        this.fitness = calculateStateScore();
+        this.stateScore = calculateStateScore();
         return move;
     }
 
@@ -153,7 +153,7 @@ class Warehouse {
         Warehouse clone = new Warehouse(state, finalState);
         LinkedList<Move> clonedMoves = new LinkedList<>(moves);
         clone.overwriteMoves(clonedMoves);
-        clone.fitness = this.fitness;
+        clone.stateScore = this.stateScore;
         return clone;
     }
 
