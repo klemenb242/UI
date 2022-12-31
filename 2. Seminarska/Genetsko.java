@@ -85,6 +85,12 @@ class GeneticAlgorithm {
         // replace child1 and child2 with the worst individuals in the population
         population.set(population.size() - 1, child1);
         population.set(population.size() - 2, child2);
+        int warehousesToCrossover = (int) (POPULATION_SIZE * 0.333);
+        for (int i = 0; i < warehousesToCrossover; i++) {
+            Warehouse parent = population.get(i);
+            Warehouse child = parent.deepClone();
+            population.set(population.size() - 1 - i, child);
+        }
 
         for (Warehouse warehouse : population) {
             warehouse.makeRandomMove();
@@ -132,12 +138,12 @@ public class Genetsko {
         solutions.sort((a, b) -> Integer.compare(a.getNumberOfMoves(), b.getNumberOfMoves()));
         Warehouse best = solutions.get(0);
         System.out.println(best.isSolved());
-        System.out.println("Best solution found in " + best.getNumberOfMoves() + " moves");
         Warehouse temp = new Warehouse(initialState, finalState);
         for (Warehouse.Move move : best.getMoves()) {
             temp.move(move.getFromCol(), move.getToCol());
             System.out.println(temp);
         }
+        System.out.println("Best solution found in " + best.getNumberOfMoves() + " moves");
     }
 
 }
