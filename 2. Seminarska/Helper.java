@@ -12,9 +12,13 @@ public class Helper {
     }
 
     public static void main(String[] args) throws Exception {
-        Warehouse w = Warehouse.createFromFile("primer2_zacetna.txt", "primer2_koncna.txt");
-        w.move(2, 0);
+        Warehouse w = Warehouse.createFromFile("test_zacetna.txt", "test_koncna.txt");
+        w.move(0, 2);
+        System.out.println(w.stateScore);
         w.move(0, 1);
+        System.out.println(w.stateScore);
+        w.move(2, 1);
+        System.out.println(w.stateScore);
         System.out.println(w.isSolved());
         System.out.println(w);
     }
