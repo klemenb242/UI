@@ -25,22 +25,7 @@ class Warehouse {
         this.finalStateMap = generateStateMap(finalState);
     }
 
-    public void addMove(Move move) {
-        moves.add(move);
-    }
-
-    public void overwriteMoves(LinkedList<Move> moves) {
-        this.moves = moves;
-    }
-
-    public int getNumberOfMoves() {
-        return moves.size();
-    }
-
-    public LinkedList<Move> getMoves() {
-        return moves;
-    }
-
+    // blockId : [row, col]
     private HashMap<Character, int[]> generateStateMap(char[][] state) {
         HashMap<Character, int[]> stateMap = new HashMap<>();
         for (int i = 0; i < numRows; i++) {
@@ -177,6 +162,22 @@ class Warehouse {
             clonedState[i] = state[i].clone();
         }
         return clonedState;
+    }
+
+    public void addMove(Move move) {
+        moves.add(move);
+    }
+
+    public void overwriteMoves(LinkedList<Move> moves) {
+        this.moves = moves;
+    }
+
+    public int getNumberOfMoves() {
+        return moves.size();
+    }
+
+    public LinkedList<Move> getMoves() {
+        return moves;
     }
 
     public static Warehouse createFromFile(String fileInitial, String fileFinal) throws IOException {
