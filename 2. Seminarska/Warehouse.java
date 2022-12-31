@@ -11,6 +11,7 @@ class Warehouse {
     int numCols;
     public char[][] state;
     private char[][] finalState;
+    HashMap<Character, int[]> finalStateMap;
     private LinkedList<Move> moves;
 
     public double fitness;
@@ -21,6 +22,7 @@ class Warehouse {
         this.numCols = initialState[0].length;
         this.finalState = finalState;
         this.moves = new LinkedList<>();
+        this.finalStateMap = generateStateMap(finalState);
     }
 
     public void addMove(Move move) {
@@ -39,35 +41,28 @@ class Warehouse {
         return moves;
     }
 
-    public double stateScore() {
-        double score = 0.0;
+    private HashMap<Character, int[]> generateStateMap(char[][] state) {
+        HashMap<Character, int[]> stateMap = new HashMap<>();
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
                 if (state[i][j] == BLOCK_NULL) {
                     continue;
                 }
-                if (state[i][j] == finalState[i][j]) {
-                    // if block is in the correct position, add 1.0 to the score
-                    score += 1.0;
-                } else {
-                    // check if element is in the same column
-                    for (int row = 0; row < numRows; row++) {
-                        if (state[i][j] == finalState[row][j]) {
-                            // if block is in the same column, add 0.2 to the score
-                            score += 0.2;
-                        }
-                    }
-                    // check if block is in an adjacent position to its desired position
-                    for (int row = Math.max(0, i - 1); row <= Math.min(numRows - 1, i + 1); row++) {
-                        for (int col = Math.max(0, j - 1); col <= Math.min(numCols - 1, j + 1); col++) {
-                            if (state[i][j] == finalState[row][col]) {
-                                // if block is in an adjacent position, add 0.1 to the score
-                                score += 0.1;
-                            }
-                        }
-                    }
-                }
+                stateMap.put(state[i][j], new int[] { i, j });
             }
+        }
+        return stateMap;
+    }
+
+    public double stateScore() {
+        double score = 0.0;
+        HashMap<Character, int[]> currentStateMap = generateStateMap(state);
+        // calculate distance of each block from its final position
+        for (Map.Entry<Character, int[]> entry : currentStateMap.entrySet()) {
+            char block = entry.getKey();
+            int[] currentPos = entry.getValue();
+            int[] finalPos = finalStateMap.get(block);
+            score += Math.sqrt(Math.pow(currentPos[0] - finalPos[0], 2) + Math.pow(currentPos[1] - finalPos[1], 2));
         }
         return score;
     }

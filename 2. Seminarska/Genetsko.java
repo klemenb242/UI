@@ -47,8 +47,8 @@ class GeneticAlgorithm {
                 solvedWarehouse = warehouse;
                 break;
             }
-
         }
+
     }
 
     public Warehouse selectParent() {
@@ -77,7 +77,7 @@ class GeneticAlgorithm {
 
     public void generateNextGeneration() {
         // sort population by fitness
-        population.sort((a, b) -> Double.compare(b.fitness, a.fitness));
+        population.sort((a, b) -> Double.compare(-b.fitness, -a.fitness));
         Warehouse parent1 = population.get(0);
         Warehouse parent2 = population.get(1);
         Warehouse child1 = parent1.deepClone();
@@ -108,8 +108,8 @@ class GeneticAlgorithm {
 }
 
 public class Genetsko {
-    static String initialFile = "primer1_zacetna.txt";
-    static String finalFile = "primer1_koncna.txt";
+    static String initialFile = "primer4_zacetna.txt";
+    static String finalFile = "primer4_koncna.txt";
 
     public static void main(String[] args) throws Exception {
         char[][] initialState = Warehouse.readStateFromFile(initialFile);
@@ -138,7 +138,6 @@ public class Genetsko {
             temp.move(move.getFromCol(), move.getToCol());
             System.out.println(temp);
         }
-        System.out.println("Number of solutions found: " + solutions.size());
     }
 
 }
