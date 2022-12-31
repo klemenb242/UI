@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.util.*;
 
+import javax.swing.plaf.metal.MetalScrollPaneUI;
+
 class Warehouse {
     private static final char BLOCK_NULL = '\0';
 
@@ -11,7 +13,6 @@ class Warehouse {
     int numCols;
     public char[][] state;
     private char[][] finalState;
-    HashMap<Character, int[]> finalStateMap;
     private LinkedList<Move> moves;
 
     public double stateScore;
@@ -22,45 +23,43 @@ class Warehouse {
         this.numCols = initialState[0].length;
         this.finalState = finalState;
         this.moves = new LinkedList<>();
-        this.finalStateMap = generateStateMap(finalState);
     }
 
-    // blockId : [row, col]
-    private HashMap<Character, int[]> generateStateMap(char[][] state) {
-        HashMap<Character, int[]> stateMap = new HashMap<>();
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                if (state[i][j] == BLOCK_NULL) {
-                    continue;
-                }
-                stateMap.put(state[i][j], new int[] { i, j });
-            }
-        }
-        return stateMap;
+    private double scoreForPosition(Position currentP, Position finalP) {
+        return Math.sqrt(
+                Math.pow(currentP.getRow() - finalP.getRow(), 2) + Math.pow(currentP.getCol() - finalP.getCol(), 2));
     }
 
     public double calculateStateScore() {
         double score = 0.0;
-        HashMap<Character, int[]> currentStateMap = generateStateMap(state);
-        // calculate distance of each block from its final position
-        for (Map.Entry<Character, int[]> entry : currentStateMap.entrySet()) {
-            char block = entry.getKey();
-            int[] currentPos = entry.getValue();
-            int[] finalPos = finalStateMap.get(block);
-            score += Math.sqrt(Math.pow(currentPos[0] - finalPos[0], 2) + Math.pow(currentPos[1] - finalPos[1], 2));
+        // loop over all rows and columns
+        HashMap<Character, Position> seenBlocks = new HashMap<>();
+        for (int row = 0; row < numRows; row++) {
+            for (int column = 0; column < numCols; column++) {
+                if (state[row][column] == finalState[row][column]) {
+                    continue;
+                }
+                if (seenBlocks.containsKey(state[row][column])) {
+                    Position seenPos = seenBlocks.get(state[row][column]);
+                    score += scoreForPosition(new Position(row, column), seenPos);
+                }
+                if (seenBlocks.containsKey(finalState[row][column])) {
+                    Position seenPos = seenBlocks.get(finalState[row][column]);
+                    score += scoreForPosition(seenPos, new Position(row, column));
+                }
+                if (state[row][column] != BLOCK_NULL) {
+                    seenBlocks.put(state[row][column], new Position(row, column));
+                }
+                if (finalState[row][column] != BLOCK_NULL) {
+                    seenBlocks.put(finalState[row][column], new Position(row, column));
+                }
+            }
         }
         return score;
     }
 
     public boolean isSolved() {
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                if (state[i][j] != finalState[i][j]) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return stateScore == 0.0;
     }
 
     public Move move(int fromCol, int toCol) throws IllegalArgumentException {
@@ -93,7 +92,7 @@ class Warehouse {
         state[toRow][toCol] = state[fromRow][fromCol];
         state[fromRow][fromCol] = BLOCK_NULL;
         // create a new move
-        Move move = new Move(fromRow, fromCol, toRow, toCol);
+        Move move = new Move(new Position(fromRow, fromCol), new Position(toRow, toCol));
         addMove(move);
         this.stateScore = calculateStateScore();
         return move;
@@ -242,29 +241,52 @@ class Warehouse {
         return state;
     }
 
-    public class Move {
-        int fromRow;
-        int fromCol;
-        int toRow;
-        int toCol;
+    public class Position {
+        int row;
+        int col;
 
-        public Move(int fromRow, int fromCol, int toRow, int toCol) {
-            this.fromRow = fromRow;
-            this.fromCol = fromCol;
-            this.toRow = toRow;
-            this.toCol = toCol;
+        public Position(int row, int col) {
+            this.row = row;
+            this.col = col;
+        }
+
+        public int getRow() {
+            return row;
+        }
+
+        public int getCol() {
+            return col;
+        }
+    }
+
+    public class Move {
+        Position from;
+        Position to;
+
+        public Move(Position from, Position to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public Position getFrom() {
+            return from;
         }
 
         public int getFromCol() {
-            return fromCol;
+            return from.getCol();
         }
 
         public int getToCol() {
-            return toCol;
+            return to.getCol();
+        }
+
+        public Position getTo() {
+            return to;
         }
 
         public String toString() {
-            return fromCol + " -> " + toCol;
+            return from.getCol() + " -> " + to.getCol();
         }
     }
+
 }
