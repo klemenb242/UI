@@ -1,22 +1,22 @@
 import java.util.*;
 
-class DFS {
+class BFS {
 
-    static String initialFile = "primer3_zacetna.txt";
-    static String finalFile = "primer3_koncna.txt";
+    static String initialFile = "primer1_zacetna.txt";
+    static String finalFile = "primer1_koncna.txt";
 
     public static List<Warehouse.Move> search(Warehouse initial, Warehouse finalState) {
-        // create a stack to store the nodes (i.e., states) that need to be explored
-        Stack<Warehouse> stack = new Stack<>();
-        // add the initial state to the stack
-        stack.push(initial);
+        // create a queue to store the nodes (i.e., states) that need to be explored
+        Queue<Warehouse> queue = new LinkedList<>();
+        // add the initial state to the queue
+        queue.add(initial);
 
         // create a set to store the states that have already been explored
         Set<String> explored = new HashSet<>();
 
-        while (!stack.isEmpty()) {
-            // pop the top node from the stack
-            Warehouse current = stack.pop();
+        while (!queue.isEmpty()) {
+            // remove the front node from the queue
+            Warehouse current = queue.poll();
 
             // if the current state is the final state, return the moves that led to it
             if (current.isSolved()) {
@@ -29,25 +29,19 @@ class DFS {
             // for each move that can be made from the current state
             for (int fromCol = 0; fromCol < current.numCols; fromCol++) {
                 for (int toCol = 0; toCol < current.numCols; toCol++) {
-                    // skip the move if it's illegal
                     if (!current.canMove(fromCol, toCol)) {
                         continue;
                     }
-
-                    // make a copy of the current state
                     Warehouse next = current.deepClone();
-                    // make the move on the copy
-                    next.move(fromCol, toCol);
-
-                    // if the resulting state has not been explored, add it to the stack
+                    Warehouse.Move move = next.move(fromCol, toCol);
                     if (!explored.contains(next.toString())) {
-                        stack.push(next);
+                        queue.add(next);
                     }
                 }
             }
         }
 
-        // if no solution was found, return an empty list
+        // if no solution was found, return an empty list of moves
         return new ArrayList<>();
     }
 
@@ -61,4 +55,5 @@ class DFS {
         List<Warehouse.Move> moves = search(initial, finalWarehouse);
         System.out.println(moves.size() + " moves");
     }
+
 }

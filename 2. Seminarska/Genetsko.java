@@ -3,7 +3,7 @@ import java.util.Random;
 import java.util.*;
 
 class GeneticAlgorithm {
-    public static int POPULATION_SIZE = 15;
+    public static int POPULATION_SIZE = 25;
     public static int DEFAULT_GENERATION_LIMIT = 1000;
 
     List<Warehouse> population;
@@ -54,8 +54,8 @@ class GeneticAlgorithm {
         // sort population by fitness
         population.sort((a, b) -> Double.compare(-b.stateScore, -a.stateScore));
         // clone 30% of best performers and replace with worst
-        int warehousesToCrossover = (int) (POPULATION_SIZE * 0.3);
-        for (int i = 0; i < warehousesToCrossover; i++) {
+        int warehousesToClone = (int) (POPULATION_SIZE * 0.3);
+        for (int i = 0; i < warehousesToClone; i++) {
             Warehouse parent = population.get(i);
             Warehouse child = parent.deepClone();
             population.set(population.size() - 1 - i, child);
@@ -70,7 +70,7 @@ class GeneticAlgorithm {
 
     public Warehouse run() {
         initializePopulation();
-        while (generation < generationLimit && solvedWarehouse == null) {
+        while (generation < generationLimit) {
             evaluateFitness();
             if (solvedWarehouse != null)
                 break;
@@ -106,7 +106,9 @@ public class Genetsko {
         Warehouse best = solutions.get(0);
         System.out.println(best.isSolved());
         Warehouse temp = new Warehouse(initialState, finalState);
+        System.out.println(temp);
         for (Warehouse.Move move : best.getMoves()) {
+            System.out.println(move);
             temp.move(move.getFromCol(), move.getToCol());
             System.out.println(temp);
         }

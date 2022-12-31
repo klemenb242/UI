@@ -13,25 +13,24 @@ class Warehouse {
     int numCols;
     public char[][] state;
     private char[][] finalState;
-    private LinkedList<Move> moves;
-
-    public double stateScore;
+    private LinkedList<Move> moves = new LinkedList<>();
+    public double stateScore = -1;
 
     public Warehouse(char[][] initialState, char[][] finalState) {
         this.state = Warehouse.cloneState(initialState);
         this.numRows = initialState.length;
         this.numCols = initialState[0].length;
         this.finalState = finalState;
-        this.moves = new LinkedList<>();
     }
 
+    //
     private double scoreForPosition(Position currentP, Position finalP) {
         double distance = Math.sqrt(
                 Math.pow(currentP.getRow() - finalP.getRow(), 2) + Math.pow(currentP.getCol() - finalP.getCol(), 2));
-        // if the block is in the same column, but not in the right row, then it is at
-        // least 3 moves away from its final position
+        // if the block is in the same column, but not in the right row, then it is
+        // still far off from final position
         if (currentP.getCol() == finalP.getCol()) {
-            distance += 3;
+            distance += this.numCols;
         }
         return distance;
     }
@@ -69,19 +68,8 @@ class Warehouse {
     }
 
     public Move move(int fromCol, int toCol) throws IllegalArgumentException {
-        if (fromCol == toCol) {
-            throw new IllegalArgumentException("FROM and TO columns are the same.");
-        }
-        if (fromCol < 0 || fromCol >= numCols || toCol < 0 || toCol >= numCols) {
-            throw new IllegalArgumentException("Invalid column index.");
-        }
-        // if fromCOl is empty
-        if (this.getColumnTop(fromCol) == BLOCK_NULL) {
-            throw new IllegalArgumentException("No block in FROM column " + fromCol);
-        }
-        // if toCol is full
-        if (this.isCoulmnFull(toCol)) {
-            throw new IllegalArgumentException("TO column " + toCol + " is full.");
+        if (!canMove(fromCol, toCol)) {
+            throw new IllegalArgumentException("Can`t move there.");
         }
         // find the row of the top block in the FROM column
         int fromRow = 0;
@@ -102,6 +90,24 @@ class Warehouse {
         addMove(move);
         this.stateScore = calculateStateScore();
         return move;
+    }
+
+    public boolean canMove(int fromCol, int toCol) {
+        if (fromCol == toCol) {
+            return false;
+        }
+        if (fromCol < 0 || fromCol >= numCols || toCol < 0 || toCol >= numCols) {
+            return false;
+        }
+        // if fromCOl is empty
+        if (this.getColumnTop(fromCol) == BLOCK_NULL) {
+            return false;
+        }
+        // if toCol is full
+        if (this.isCoulmnFull(toCol)) {
+            return false;
+        }
+        return true;
     }
 
     public Move makeRandomMove() {
@@ -184,6 +190,14 @@ class Warehouse {
 
     public LinkedList<Move> getMoves() {
         return moves;
+    }
+
+    public int gValue() {
+        return moves.size() * 3;
+    }
+
+    public double hValue() {
+        return stateScore;
     }
 
     public static Warehouse createFromFile(String fileInitial, String fileFinal) throws IOException {
