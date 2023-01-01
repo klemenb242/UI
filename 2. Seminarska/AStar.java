@@ -46,16 +46,13 @@ class AStar {
             // for each move that can be made from the current state
             for (int fromCol = 0; fromCol < current.numCols; fromCol++) {
                 for (int toCol = 0; toCol < current.numCols; toCol++) {
-                    // try to make the move
-                    try {
-                        Warehouse next = current.deepClone();
-                        Warehouse.Move move = next.move(fromCol, toCol);
-                        // if the move is valid and the resulting state has not been explored
-                        if (!explored.contains(next.toString())) {
-                            queue.add(next);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        // if the move is not valid, do nothing
+                    if (!current.canMove(fromCol, toCol)) {
+                        continue;
+                    }
+                    Warehouse next = current.deepClone();
+                    Warehouse.Move move = next.move(fromCol, toCol);
+                    if (!explored.contains(next.toString())) {
+                        queue.add(next);
                     }
                 }
             }
