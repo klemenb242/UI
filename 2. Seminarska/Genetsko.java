@@ -81,8 +81,8 @@ class GeneticAlgorithm {
 }
 
 public class Genetsko {
-    static String initialFile = "primer5_zacetna.txt";
-    static String finalFile = "primer5_koncna.txt";
+    static String initialFile = "primer2_zacetna.txt";
+    static String finalFile = "primer2_koncna.txt";
 
     public static void main(String[] args) throws Exception {
         char[][] initialState = Warehouse.readStateFromFile(initialFile);
