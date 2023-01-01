@@ -2,8 +2,8 @@ import java.util.*;
 
 class AStar {
 
-    static String initialFile = "primer5_zacetna.txt";
-    static String finalFile = "primer5_koncna.txt";
+    static String initialFile = "primer4_zacetna.txt";
+    static String finalFile = "primer4_koncna.txt";
 
     static int numExploredNodes = 0;
     static int maxDepth = 0;

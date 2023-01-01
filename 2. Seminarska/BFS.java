@@ -2,8 +2,8 @@ import java.util.*;
 
 class BFS {
 
-    static String initialFile = "primer1_zacetna.txt";
-    static String finalFile = "primer1_koncna.txt";
+    static String initialFile = "primer4_zacetna.txt";
+    static String finalFile = "primer4_koncna.txt";
 
     public static List<Warehouse.Move> search(Warehouse initial, Warehouse finalState) {
         // create a queue to store the nodes (i.e., states) that need to be explored

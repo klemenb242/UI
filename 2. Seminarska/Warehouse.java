@@ -117,8 +117,7 @@ class Warehouse {
             toCol = random.nextInt(numCols);
             try {
                 move = move(fromCol, toCol);
-            } catch (Exception ignore) {
-            }
+            } catch (Exception ignore) {}
         }
         return move;
     }
