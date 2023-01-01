@@ -21,8 +21,7 @@ class Warehouse {
         this.finalState = finalState;
     }
 
-    //
-    private double scoreForPosition(Position currentP, Position finalP) {
+    private double distanceForPosition(Position currentP, Position finalP) {
         double distance = Math.sqrt(
                 Math.pow(currentP.getRow() - finalP.getRow(), 2) + Math.pow(currentP.getCol() - finalP.getCol(), 2));
         // if the block is in the same column, but not in the right row, then it is
@@ -44,11 +43,11 @@ class Warehouse {
                 }
                 if (seenBlocks.containsKey(state[row][column])) {
                     Position seenPos = seenBlocks.get(state[row][column]);
-                    score += scoreForPosition(new Position(row, column), seenPos);
+                    score += distanceForPosition(new Position(row, column), seenPos);
                 }
                 if (seenBlocks.containsKey(finalState[row][column])) {
                     Position seenPos = seenBlocks.get(finalState[row][column]);
-                    score += scoreForPosition(seenPos, new Position(row, column));
+                    score += distanceForPosition(seenPos, new Position(row, column));
                 }
                 if (state[row][column] != BLOCK_NULL) {
                     seenBlocks.put(state[row][column], new Position(row, column));
