@@ -16,7 +16,7 @@ class AStar {
         // its g-value and h-value)
         PriorityQueue<Warehouse> queue = new PriorityQueue<>(new Comparator<Warehouse>() {
             public int compare(Warehouse a, Warehouse b) {
-                return Double.compare(a.gValue() + a.hValue(), b.gValue() + b.hValue());
+                return Double.compare(a.fValue(), b.fValue());
             }
         });
         // add the initial state to the queue

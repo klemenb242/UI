@@ -189,6 +189,10 @@ class Warehouse {
         return moves;
     }
 
+    public double fValue() {
+        return gValue() + hValue();
+    }
+
     public int gValue() {
         return moves.size() * 3;
     }

@@ -100,7 +100,6 @@ public class Genetsko {
                 System.out.println("Found solution in " + geneticAlgorithm.generation + " generations");
             }
         }
-
         // sort solutions by number of moves
         solutions.sort((a, b) -> Integer.compare(a.getNumberOfMoves(), b.getNumberOfMoves()));
         Warehouse best = solutions.get(0);
