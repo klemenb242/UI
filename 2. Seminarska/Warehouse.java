@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-import javax.swing.plaf.metal.MetalScrollPaneUI;
-
 class Warehouse {
     private static final char BLOCK_NULL = '\0';
 
@@ -14,7 +12,7 @@ class Warehouse {
     public char[][] state;
     private char[][] finalState;
     private LinkedList<Move> moves = new LinkedList<>();
-    public double stateScore = -1;
+    public double stateDistance = -1;
 
     public Warehouse(char[][] initialState, char[][] finalState) {
         this.state = Warehouse.cloneState(initialState);
@@ -35,7 +33,7 @@ class Warehouse {
         return distance;
     }
 
-    public double calculateStateScore() {
+    public double calculateStateDistance() {
         double score = 0.0;
         // loop over all rows and columns
         HashMap<Character, Position> seenBlocks = new HashMap<>();
@@ -64,7 +62,7 @@ class Warehouse {
     }
 
     public boolean isSolved() {
-        return stateScore == 0.0;
+        return stateDistance == 0.0;
     }
 
     public Move move(int fromCol, int toCol) throws IllegalArgumentException {
@@ -88,7 +86,7 @@ class Warehouse {
         // create a new move
         Move move = new Move(new Position(fromRow, fromCol), new Position(toRow, toCol));
         addMove(move);
-        this.stateScore = calculateStateScore();
+        this.stateDistance = calculateStateDistance();
         return move;
     }
 
@@ -164,7 +162,7 @@ class Warehouse {
         Warehouse clone = new Warehouse(state, finalState);
         LinkedList<Move> clonedMoves = new LinkedList<>(moves);
         clone.overwriteMoves(clonedMoves);
-        clone.stateScore = this.stateScore;
+        clone.stateDistance = this.stateDistance;
         return clone;
     }
 
@@ -197,7 +195,7 @@ class Warehouse {
     }
 
     public double hValue() {
-        return stateScore;
+        return stateDistance;
     }
 
     public static Warehouse createFromFile(String fileInitial, String fileFinal) throws IOException {

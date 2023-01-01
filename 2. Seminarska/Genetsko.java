@@ -52,7 +52,7 @@ class GeneticAlgorithm {
 
     public void generateNextGeneration() {
         // sort population by fitness
-        population.sort((a, b) -> Double.compare(-b.stateScore, -a.stateScore));
+        population.sort((a, b) -> Double.compare(-b.stateDistance, -a.stateDistance));
         // clone 30% of best performers and replace with worst
         int warehousesToClone = (int) (POPULATION_SIZE * 0.3);
         for (int i = 0; i < warehousesToClone; i++) {
@@ -106,13 +106,7 @@ public class Genetsko {
         Warehouse best = solutions.get(0);
         System.out.println(best.isSolved());
         Warehouse temp = new Warehouse(initialState, finalState);
-        System.out.println(temp);
-        for (Warehouse.Move move : best.getMoves()) {
-            System.out.println(move);
-            temp.move(move.getFromCol(), move.getToCol());
-            System.out.println(temp);
-        }
-        System.out.println("Best solution found in " + best.getNumberOfMoves() + " moves");
+        Helper.simulateMoves(temp, best.getMoves());
     }
 
 }

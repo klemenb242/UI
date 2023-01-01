@@ -5,6 +5,10 @@ class AStar {
     static String initialFile = "primer5_zacetna.txt";
     static String finalFile = "primer5_koncna.txt";
 
+    static int numExploredNodes = 0;
+    static int maxDepth = 0;
+    static int maxMemory = 1;
+
     public static List<Warehouse.Move> search(Warehouse initialWarehouse) {
         // create a priority queue to store the nodes (i.e., states) that need to be
         // explored
@@ -24,6 +28,12 @@ class AStar {
         while (!queue.isEmpty()) {
             // remove the node with the lowest f-value from the queue
             Warehouse current = queue.poll();
+            numExploredNodes++;
+
+            // update the search statistics
+            int currentDepth = current.gValue();
+            maxDepth = Math.max(maxDepth, currentDepth);
+            maxMemory = Math.max(maxMemory, queue.size());
 
             // if the current state is the final state, return the moves that led to it
             if (current.isSolved()) {
@@ -59,7 +69,11 @@ class AStar {
         char[][] initialState = Warehouse.readStateFromFile(initialFile);
         char[][] finalState = Warehouse.readStateFromFile(finalFile);
         List<Warehouse.Move> moves = search(new Warehouse(initialState, finalState));
-        System.out.println(moves.size() + " moves");
+        Warehouse temp = new Warehouse(initialState, finalState);
+        Helper.simulateMoves(temp, moves);
+        System.out.println("Number of explored nodes: " + numExploredNodes);
+        System.out.println("Maximum search depth: " + maxDepth);
+        System.out.println("Maximum memory usage: " + maxMemory);
     }
 
 }
