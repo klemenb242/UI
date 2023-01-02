@@ -2,14 +2,13 @@ import java.util.*;
 
 class AStar {
 
-    static String initialFile = "primer4_zacetna.txt";
-    static String finalFile = "primer4_koncna.txt";
+    static String initialFile = "test_zacetna.txt";
+    static String finalFile = "test_koncna.txt";
 
-    static int numExploredNodes = 0;
-    static int maxDepth = 0;
-    static int maxMemory = 1;
+    static Counter counter = new Counter();
 
     public static List<Warehouse.Move> search(Warehouse initialWarehouse) {
+        counter.startTiming();
         // create a priority queue to store the nodes (i.e., states) that need to be
         // explored
         // the priority queue is ordered by the f-value of each node (i.e., the sum of
@@ -28,15 +27,14 @@ class AStar {
         while (!queue.isEmpty()) {
             // remove the node with the lowest f-value from the queue
             Warehouse current = queue.poll();
-            numExploredNodes++;
+            counter.incrementExploredNodes();
 
             // update the search statistics
-            int currentDepth = current.gValue();
-            maxDepth = Math.max(maxDepth, currentDepth);
-            maxMemory = Math.max(maxMemory, queue.size());
+            counter.checkMaxDepth(current.getNumberOfMoves());
 
             // if the current state is the final state, return the moves that led to it
             if (current.isSolved()) {
+                counter.stopTiming();
                 return current.getMoves();
             }
 
@@ -53,12 +51,14 @@ class AStar {
                     Warehouse.Move move = next.move(fromCol, toCol);
                     if (!explored.contains(next.toString())) {
                         queue.add(next);
+                        counter.checkMaxMemory(queue.size());
                     }
                 }
             }
         }
 
         // if no solution was found, return an empty list of moves
+        counter.stopTiming();
         return new ArrayList<>();
     }
 
@@ -68,9 +68,7 @@ class AStar {
         List<Warehouse.Move> moves = search(new Warehouse(initialState, finalState));
         Warehouse temp = new Warehouse(initialState, finalState);
         Helper.simulateMoves(temp, moves);
-        System.out.println("Number of explored nodes: " + numExploredNodes);
-        System.out.println("Maximum search depth: " + maxDepth);
-        System.out.println("Maximum memory usage: " + maxMemory);
+        System.out.println(counter);
     }
 
 }
