@@ -2,8 +2,8 @@ import java.util.*;
 
 class AStar {
 
-    static String initialFile = "test_zacetna.txt";
-    static String finalFile = "test_koncna.txt";
+    static String initialFile = "primer4_zacetna.txt";
+    static String finalFile = "primer4_koncna.txt";
 
     static Counter counter = new Counter();
 
@@ -68,7 +68,7 @@ class AStar {
         List<Warehouse.Move> moves = search(new Warehouse(initialState, finalState));
         Warehouse temp = new Warehouse(initialState, finalState);
         Helper.simulateMoves(temp, moves);
-        System.out.println(counter);
+        System.out.println(AStar.counter);
     }
 
 }

@@ -2,6 +2,39 @@ import java.util.Random;
 
 import java.util.*;
 
+public class Genetsko {
+    static String initialFile = "primer4_zacetna.txt";
+    static String finalFile = "primer4_koncna.txt";
+
+    public static void main(String[] args) throws Exception {
+        char[][] initialState = Warehouse.readStateFromFile(initialFile);
+        char[][] finalState = Warehouse.readStateFromFile(finalFile);
+
+        ArrayList<Warehouse> solutions = new ArrayList<>();
+        int generationLimit = GeneticAlgorithm.DEFAULT_GENERATION_LIMIT;
+
+        GeneticAlgorithm.counter.startTiming();
+        for (int i = 0; i < 1000; i++) {
+            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState, generationLimit);
+            Warehouse solution = geneticAlgorithm.run();
+            if (solution != null && solution.getNumberOfMoves() < generationLimit) {
+                generationLimit = solution.getNumberOfMoves();
+                solutions.add(solution);
+                System.out.println("Found solution in " + geneticAlgorithm.generation + " generations");
+            }
+        }
+        GeneticAlgorithm.counter.stopTiming();
+        // sort solutions by number of moves
+        solutions.sort((a, b) -> Integer.compare(a.getNumberOfMoves(), b.getNumberOfMoves()));
+        Warehouse best = solutions.get(0);
+        System.out.println(best.isSolved());
+        Warehouse temp = new Warehouse(initialState, finalState);
+        Helper.simulateMoves(temp, best.getMoves());
+        System.out.println(GeneticAlgorithm.counter);
+    }
+
+}
+
 class GeneticAlgorithm {
     public static int POPULATION_SIZE = 50;
     public static int DEFAULT_GENERATION_LIMIT = 1000;
@@ -27,7 +60,6 @@ class GeneticAlgorithm {
         this.generationLimit = generationLimit;
         this.population = new ArrayList<>();
         solvedWarehouse = null;
-        counter.checkMaxMemory(POPULATION_SIZE);
     }
 
     // initialize population of individuals with random values
@@ -38,6 +70,7 @@ class GeneticAlgorithm {
             population.add(warehouse);
         }
         generation = 1;
+        counter.checkMaxMemory(POPULATION_SIZE);
     }
 
     // evaluate the fitness of each individual in the population using the rating
@@ -83,37 +116,4 @@ class GeneticAlgorithm {
         counter.addToExploredNodes(generation * POPULATION_SIZE);
         return solvedWarehouse;
     }
-}
-
-public class Genetsko {
-    static String initialFile = "primer5_zacetna.txt";
-    static String finalFile = "primer5_koncna.txt";
-
-    public static void main(String[] args) throws Exception {
-        char[][] initialState = Warehouse.readStateFromFile(initialFile);
-        char[][] finalState = Warehouse.readStateFromFile(finalFile);
-
-        ArrayList<Warehouse> solutions = new ArrayList<>();
-        int generationLimit = GeneticAlgorithm.DEFAULT_GENERATION_LIMIT;
-
-        GeneticAlgorithm.counter.startTiming();
-        for (int i = 0; i < 1000; i++) {
-            GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(initialState, finalState, generationLimit);
-            Warehouse solution = geneticAlgorithm.run();
-            if (solution != null && solution.getNumberOfMoves() < generationLimit) {
-                generationLimit = solution.getNumberOfMoves();
-                solutions.add(solution);
-                System.out.println("Found solution in " + geneticAlgorithm.generation + " generations");
-            }
-        }
-        GeneticAlgorithm.counter.stopTiming();
-        // sort solutions by number of moves
-        solutions.sort((a, b) -> Integer.compare(a.getNumberOfMoves(), b.getNumberOfMoves()));
-        Warehouse best = solutions.get(0);
-        System.out.println(best.isSolved());
-        Warehouse temp = new Warehouse(initialState, finalState);
-        Helper.simulateMoves(temp, best.getMoves());
-        System.out.println(GeneticAlgorithm.counter);
-    }
-
 }
